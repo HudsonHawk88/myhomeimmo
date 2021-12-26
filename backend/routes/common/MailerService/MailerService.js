@@ -16,7 +16,7 @@ router.post('/', (req, res) => {
     Az én nevem: ${emailObj.nev}.<br>
     Telefonszámom: ${emailObj.telefon}.<br><br>
     ${emailObj.statusz} ingatlanom van! Kérem vegye fel velem a kapcsolatot!<br><br>
-    Tiszteletel:<br>
+    Tisztelettel:<br>
     ${emailObj.nev}<br>
     `, // html body
     },
@@ -42,7 +42,7 @@ router.post('/ingatlanerd', (req, res) => {
     Telefonszámom: ${emailObj.telefon}.<br><br>
     Az alábbi kérdésem lenne az ingatlannal kapcsolatban:<br><br>
     ${emailObj.uzenet}<br><br>
-    Tiszteletel:<br>
+    Tisztelettel:<br>
     ${emailObj.nev}<br>
     `, // html body
     },
@@ -69,7 +69,7 @@ router.post('/jobApply', (req, res) => {
       Az én nevem: ${emailObj.nev}.<br>
       Telefonszámom: ${emailObj.telefon}.<br><br>
       Ezúton jelentkeznék az Ön által meghirdetett állásra. Önéletrajzomat csatoltam.<br><br>
-      Tiszteletel:<br>
+      Tisztelettel:<br>
       ${emailObj.nev}<br>
       `, // html body
       },
@@ -91,7 +91,7 @@ router.post('/jobApply', (req, res) => {
       Az én nevem: ${emailObj.nev}.<br>
       Telefonszámom: ${emailObj.telefon}.<br><br>
       Ezúton jelentkeznék az Ön által meghirdetett állásra. Önéletrajzomat nem csatoltam.<br><br>
-      Tiszteletel:<br>
+      Tisztelettel:<br>
       ${emailObj.nev}<br>
       `, // html body
       },
@@ -119,7 +119,7 @@ router.post('/sendfromcontact', (req, res) => {
     Telefonszámom: ${emailObj.telefon}.<br><br>
     A megkeresésem oka: ${emailObj.ok}:<br><br>
     ${emailObj.uzenet}<br><br>
-    Tiszteletel:<br>
+    Tisztelettel:<br>
     ${emailObj.nev}<br>
     `, // html body
     },
