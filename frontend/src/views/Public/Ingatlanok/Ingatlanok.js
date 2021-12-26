@@ -298,7 +298,7 @@ const Ingatlanok = (props) => {
                         value={telepulesekOpts.length === 1 ? telepulesekOpts[0] : ''}
                         isClearable
                         placeholder='Kérjük válasszon települést...'
-                        onChange={(e) => { handleTelepulesChange(e); setTelepulesObj({ ...telepulesObj, telepulesnev: e.value }) }}
+                        onChange={(e) => { handleTelepulesChange(e); if(e) { setTelepulesObj({ ...telepulesObj, telepulesnev: e.value }) } }}
                     />
                 </div>
                 <div className='col-md-4'>
