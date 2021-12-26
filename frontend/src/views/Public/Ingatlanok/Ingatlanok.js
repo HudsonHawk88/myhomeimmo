@@ -12,7 +12,7 @@ const Ingatlanok = (props) => {
     const { location } = props;
 
     const defaultTelepulesObj = {
-        telepulesnev: 'Zalaegerszeg',
+        telepulesnev: '',
         irszam: '8900',
         km: '0'
     }
@@ -40,6 +40,35 @@ const Ingatlanok = (props) => {
     }
 
     const [ keresoObj, setKeresoObj ] = useState(defaultKeresoObj);
+
+    useEffect(() => {
+        if (location && location.search) {
+            
+            let kereso = location.search.substring(1);
+            kereso = JSON.parse('{"' + decodeURI(kereso).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g,'":"') + '"}');
+            const keresoObjKeys = Object.keys(keresoObj);
+            const keresoKey = Object.keys(kereso);
+            const newObj = {}
+            keresoObjKeys.forEach((key) => {
+                keresoKey.forEach((kkey) => {
+                    if (key === kkey) {
+                        if (kkey === 'telepules') {
+                            let newValue = JSON.parse(kereso[kkey]);
+                            setTelepulesObj(newValue);
+                            newObj[key] = newValue;
+                        } else {
+                            newObj[key] = kereso[key];
+                        }
+                    } else {
+                        newObj[key] = kereso[key] ? kereso[key] : '';
+                    }
+                })
+            })
+            setKeresoObj(newObj);
+            getTelepulesByIrsz(keresoObj.irszam)
+            listIngatlanok(newObj);
+        }
+    }, [location]);
    
     const [ ingatlanok, setIngatlanok ] = useState([]);
     const [ telepulesekOpts, setTelepulesekOpts ] = useState([]);
@@ -69,33 +98,7 @@ const Ingatlanok = (props) => {
         })
     }
 
-    useEffect(() => {
-        if (location && location.search) {
-            
-            let kereso = location.search.substring(1);
-            kereso = JSON.parse('{"' + decodeURI(kereso).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g,'":"') + '"}');
-            // kereso.telepules = JSON.parse(kereso.telepules)
-            const keresoObjKeys = Object.keys(keresoObj);
-            const keresoKey = Object.keys(kereso);
-            const newObj = {}
-            keresoObjKeys.forEach((key) => {
-                keresoKey.forEach((kkey) => {
-                    if (key === kkey) {
-                        if (kkey === 'telepules') {
-                            let newValue = JSON.parse(kereso[kkey]);
-                            newObj[key] = newValue;
-                        } else {
-                            newObj[key] = kereso[key];
-                        }
-                    } else {
-                        newObj[key] = kereso[key] ? kereso[key] : '';
-                    }
-                })
-            })
-            setKeresoObj(newObj);
-            listIngatlanok(newObj);
-        }
-    }, [location])
+
 
     const [ telepulesek, setTelepulesek ] = useState([]);
 
@@ -126,25 +129,38 @@ const Ingatlanok = (props) => {
         listIngatlanok(keresObj)
     }
 
-    useEffect(() => {
-        if (isIrszamTyped()) {
-          Services.getTelepulesByIrsz(keresoObj.irszam).then((res) => {
+    const getTelepulesByIrsz = (irsz) => {
+        Services.getTelepulesByIrsz(irsz).then((res) => {
             if (!res.err) {
-              setTelepulesObj({
-                  ...telepulesObj,
-                  telepulesnev: res[0].telepulesnev,
-                  irszam: res[0].irszam
-              })
-              setTelepulesekOpts(res);
+                if (res.length === 1) {
+                    setTelepulesObj({
+                        ...telepulesObj,
+                        telepulesnev: res[0].telepulesnev,
+                        irszam: res[0].irszam
+                    });
+                    setTelepulesekOpts(res);
+                } else {
+                    setTelepulesObj({
+                        ...telepulesObj,
+                      //   telepulesnev: res[0].telepulesnev,
+                        irszam: res[0].irszam
+                    })
+                    setTelepulesekOpts(res);
+                }
             } else {
               props.notification('error', res.msg)
             }
           });
+    }
+
+    useEffect(() => {
+        if (isIrszamTyped()) {
+          getTelepulesByIrsz(keresoObj.irszam)
         } else {
             setTelepulesekOpts(telepulesek);
             setTelepulesObj(defaultTelepulesObj)
         }
-      }, [isIrszamTyped(), keresoObj.irszam]);
+      }, [isIrszamTyped(), keresoObj.irszam, telepulesObj.irszam]);
 
       const renderTelepulesekOptions = () => {
         if (telepulesekOpts.length !== 0) {
@@ -230,9 +246,9 @@ const Ingatlanok = (props) => {
                     <Label>Irányítószám:</Label>
                     <Input
                         type='text'
-                        name='irsz'
-                        id='irsz'
-                        value={keresoObj.irsz}
+                        name='irszam'
+                        id='irszam'
+                        value={keresoObj.irszam}
                         onChange={(e) => handleInputChange(e, keresoObj, setKeresoObj)}
                     />
                 </div>
@@ -243,13 +259,9 @@ const Ingatlanok = (props) => {
                         name='telepulesnev'
                         id='telepulesnev'
                         value={telepulesObj.telepulesnev}
-                        onChange={(e) => handleInputChange(e, telepulesObj, setTelepulesObj)}
+                        onChange={(e) => { handleInputChange(e, telepulesObj, setTelepulesObj); setKeresoObj({ ...keresoObj, telepules: telepulesObj }) }}
                     >
-                        {
-                            keresoObj.irsz === '' && (
-                                <option key='' value=''>Kérjük válasszon települést...</option>
-                            ) 
-                        }
+                        <option key='' value=''>Kérjük válasszon települést...</option>
                         {renderTelepulesekOptions()}
                     </Input>
                 </div>

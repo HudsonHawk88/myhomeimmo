@@ -19,7 +19,7 @@ const KeresoForm = (props) => {
     const defaultKeresoObj = {
         tipus: '',
         statusz: '',
-        irsz: '',
+        irszam: '8900',
         referenciaSzam: '',
         ar: '',
         alapterulet: '',
@@ -41,7 +41,7 @@ const KeresoForm = (props) => {
     }
 
     const isIrszamTyped = () => {
-        if (keresoObj.irsz && keresoObj.irsz.length === 4) {
+        if (keresoObj.irszam && keresoObj.irszam.length === 4) {
             return true;
         } else {
             return false;
@@ -54,11 +54,10 @@ const KeresoForm = (props) => {
 
     useEffect(() => {
         if (isIrszamTyped()) {
-          Services.getTelepulesByIrsz(keresoObj.irsz).then((res) => {
+          Services.getTelepulesByIrsz(keresoObj.irszam).then((res) => {
             if (!res.err) {
               setTelepulesObj({
                 ...telepulesObj,
-                telepulesnev: res[0].telepulesnev,
                 irszam: res[0].irszam
               });
               setTelepulesekOpts(res)
@@ -66,8 +65,11 @@ const KeresoForm = (props) => {
               props.notification('error', res.msg)
             }
           });
-        } 
-      }, [isIrszamTyped(), telepulesObj.irsz]);
+        } else {
+            setTelepulesekOpts(telepulesek);
+            setTelepulesObj(defaultTelepulesObj)
+        }
+      }, [isIrszamTyped(), keresoObj.irszam]);
 
 
     const renderTelepulesekOptions = () => {
@@ -75,7 +77,7 @@ const KeresoForm = (props) => {
             return telepulesekOpts.map((telepules) => {
             return (
                 <option key={telepules.id} value={telepules.telepulesnev}>
-                {telepules.telepulesnev}
+                    {telepules.telepulesnev}
                 </option>
             );
             });
@@ -104,7 +106,6 @@ const KeresoForm = (props) => {
         keres.telepules=JSON.stringify(keres.telepules)
         const queryParams = Object.keys(keres).map(key => key + '=' + keres[key]).join('&');
         navigate(`/ingatlanok?${queryParams}`)
-        // navigate('/ingatlanok', { state: keresoObj });
     }
 
     return (
@@ -158,26 +159,22 @@ const KeresoForm = (props) => {
                 <Label>Irányítószám:</Label>
                 <Input
                     type='text'
-                    name='irsz'
-                    id='irsz'
-                    value={keresoObj.irsz}
-                    onChange={(e) => handleInputChange(e, keresoObj, setKeresoObj)}
+                    name='irszam'
+                    id='irszam'
+                    value={keresoObj.irszam}
+                    onChange={(e) => { handleInputChange(e, keresoObj, setKeresoObj); setTelepulesObj({ ...telepulesObj, irszam: e.target.value }) }}
                 />
             </div>
             <div className='col-md-6'>
                 <Label>Település:</Label>
                 <Input
                     type='select'
-                    name='telepules'
-                    id='telepules'
+                    name='telepulesnev'
+                    id='telepulesnev'
                     value={telepulesObj.telepulesnev}
                     onChange={(e) => handleInputChange(e, telepulesObj, setTelepulesObj)}
                 >
-                    {
-                        keresoObj.irsz === '' && (
-                            <option key='' value=''>Kérjük válasszon települést...</option>
-                        ) 
-                    }
+                    <option key='' value=''>Kérjük válasszon települést...</option>  
                     {renderTelepulesekOptions()}
                 </Input>
             </div>
