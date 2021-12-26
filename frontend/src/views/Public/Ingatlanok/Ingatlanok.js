@@ -43,9 +43,9 @@ const Ingatlanok = (props) => {
 
     useEffect(() => {
         if (location && location.search) {
-            
             let kereso = location.search.substring(1);
             kereso = JSON.parse('{"' + decodeURI(kereso).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g,'":"') + '"}');
+            kereso.telepules = JSON.parse(kereso.telepules);
             const keresoObjKeys = Object.keys(keresoObj);
             const keresoKey = Object.keys(kereso);
             const newObj = {}
@@ -53,9 +53,7 @@ const Ingatlanok = (props) => {
                 keresoKey.forEach((kkey) => {
                     if (key === kkey) {
                         if (kkey === 'telepules') {
-                            let newValue = JSON.parse(kereso[kkey]);
-                            setTelepulesObj(newValue);
-                            newObj[key] = newValue;
+                            setTelepulesObj(kereso[key]);
                         } else {
                             newObj[key] = kereso[key];
                         }
@@ -64,7 +62,6 @@ const Ingatlanok = (props) => {
                     }
                 })
             })
-            setKeresoObj(newObj);
             getTelepulesByIrsz(keresoObj.irszam)
             listIngatlanok(newObj);
         }
@@ -124,9 +121,7 @@ const Ingatlanok = (props) => {
     }, []);
 
     const keres = () => {
-        let keresObj = keresoObj;
-        keresoObj.telepules = telepulesObj;
-        listIngatlanok(keresObj)
+        listIngatlanok(keresoObj)
     }
 
     const getTelepulesByIrsz = (irsz) => {
