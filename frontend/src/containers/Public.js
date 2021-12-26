@@ -53,14 +53,14 @@ const Public = (props) => {
 
     const ites = (ingatlan, kep, index) => {
 
-        const imageStyle = {
-            height: '400px',
-            width: '65%'
-        }
+        // const imageStyle = {
+        //     height: '400px',
+        //     width: '65%'
+        // }
 
         return (
             <div className='carousel_image' key={index.toString()}>
-                <img style={imageStyle} src={kep.src} alt={kep.title} />
+                <img src={kep.src} alt={kep.title} />
                 <p className='image-gallery-description'>
                     {ingatlan.cim}<br />
                     <span>{`Referenciaszám: `}</span>{ingatlan.refid}<br />
