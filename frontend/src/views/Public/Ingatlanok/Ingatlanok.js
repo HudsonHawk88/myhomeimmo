@@ -55,13 +55,14 @@ const Ingatlanok = (props) => {
                         if (kkey === 'telepules') {
                             setTelepulesObj(kereso[key]);
                         } else {
-                            newObj[key] = kereso[key];
+                            newObj[kkey] = kereso[kkey];
                         }
                     } else {
                         newObj[key] = kereso[key] ? kereso[key] : '';
                     }
                 })
             })
+            setKeresoObj(newObj)
             getTelepulesByIrsz(keresoObj.irszam)
             listIngatlanok(newObj);
         }
