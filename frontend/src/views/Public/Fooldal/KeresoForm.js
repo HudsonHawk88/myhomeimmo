@@ -170,7 +170,7 @@ const KeresoForm = (props) => {
     return (
         <div className='row' style={{ padding: '10px' }}>
             <h4>Gyorskereső</h4><br />
-            <div className='col-md-6'>
+            <div className='col-lg-6 col-md-12'>
                 <Label>Ingatlan státusza:</Label>
                 <Input
                     type='select'
@@ -184,7 +184,7 @@ const KeresoForm = (props) => {
                     <option key='kiadó' value='Kiadó'>Kiadó</option>
                 </Input>
             </div>
-            <div className='col-md-6'>
+            <div className='col-lg-6 col-md-12'>
                 <Label>Ingatlan típusa:</Label>
                 <Input
                     type='select'
@@ -214,7 +214,7 @@ const KeresoForm = (props) => {
             </div>
             <div className='col-md-12' />
             <br />
-            <div className='col-md-6'>
+            <div className='col-lg-6 col-md-12'>
                 <Label>Irányítószám:</Label>
                 <Input
                     type='text'
@@ -224,7 +224,7 @@ const KeresoForm = (props) => {
                     onChange={(e) => { handleInputChange(e, keresoObj, setKeresoObj); setTelepulesObj({ ...telepulesObj, irszam: e.target.value }) }}
                 />
             </div>
-            <div className='col-md-6'>
+            <div className='col-lg-6 col-md-12'>
                 <Label>Település:</Label>
                 <Select
                     type='select'
@@ -239,7 +239,7 @@ const KeresoForm = (props) => {
             </div>
             <div className='col-md-12' />
             <br />
-            <div className='col-md-3'>
+            <div className='col-lg-3 col-md-6'>
                 <Label>Referenciaszám:</Label>
                 <Input
                     type='text'
@@ -249,7 +249,7 @@ const KeresoForm = (props) => {
                     onChange={(e) => handleInputChange(e, keresoObj, setKeresoObj)}
                 />
             </div>
-            <div className='col-md-3'>
+            <div className='col-lg-3 col-md-6'>
                 <Label>Ár:</Label>
                 <Input
                     type='text'
@@ -259,7 +259,7 @@ const KeresoForm = (props) => {
                     onChange={(e) => handleInputChange(e, keresoObj, setKeresoObj)}
                 />
             </div>
-            <div className='col-md-3'>
+            <div className='col-lg-3 col-md-6'>
                 <Label>Alapterület:</Label>
                 <Input
                     type='text'
@@ -269,7 +269,7 @@ const KeresoForm = (props) => {
                     onChange={(e) => handleInputChange(e, keresoObj, setKeresoObj)}
                 />
             </div>
-            <div className='col-md-3'>
+            <div className='col-lg-3 col-md-6'>
                 <Label>Szobaszám:</Label>
                 <Input
                     type='text'
