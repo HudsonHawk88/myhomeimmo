@@ -13,7 +13,7 @@ const Ingatlanok = (props) => {
 
     const defaultTelepulesObj = {
         telepulesnev: '',
-        irszam: '8900',
+        irszam: '',
         km: '0'
     }
 
@@ -23,7 +23,7 @@ const Ingatlanok = (props) => {
     const defaultKeresoObj = {
         tipus: '',
         statusz: '',
-        irszam: '8900',
+        irszam: '',
         referenciaSzam: '',
         ar: '',
         alapterulet: '',
@@ -106,11 +106,20 @@ const Ingatlanok = (props) => {
             const keresoObjKeys = Object.keys(keresoObj);
             const keresoKey = Object.keys(kereso);
             const newObj = {}
-            keresoObjKeys.forEach((key) => {
+                keresoObjKeys.forEach((key) => {
                 keresoKey.forEach((kkey) => {
                     if (key === kkey) {
                         if (kkey === 'telepules') {
                             newObj[kkey] = kereso[kkey];
+                            if (kereso[kkey].telepulesnev !== '' || kereso[kkey].irszam !== '') {
+                                setTelepulesObj(kereso[kkey]);
+                            } else {
+                                setTelepulesObj({
+                                    ...telepulesObj,
+                                    irszam: 8900
+                                });
+                                getTelepulesByIrsz('8900')
+                            }
                         } else {
                             newObj[kkey] = kereso[kkey];
                         }
@@ -118,9 +127,16 @@ const Ingatlanok = (props) => {
                         newObj[key] = kereso[key] ? kereso[key] : '';
                     }
                 })
-            })
-            setKeresoObj(newObj);  
+            });
+            console.log('newObj: ', newObj);
+            setKeresoObj(newObj);
             listIngatlanok(newObj);
+        } else {
+            setTelepulesObj({
+                ...telepulesObj,
+                irszam: 8900
+            });
+            getTelepulesByIrsz('8900')
         }
     }, [location]);
    
@@ -160,7 +176,7 @@ const Ingatlanok = (props) => {
     }
 
     const isIrszamTyped = () => {
-        if (keresoObj.irszam && keresoObj.irszam.length === 4) {
+        if (telepulesObj.irszam && telepulesObj.irszam.length === 4) {
             return true;
         } else {
             return false;
@@ -204,10 +220,11 @@ const Ingatlanok = (props) => {
     }
 
     useEffect(() => {
+        console.log(isIrszamTyped())
         if (isIrszamTyped()) {
-          getTelepulesByIrsz(keresoObj.irszam)
+          getTelepulesByIrsz(telepulesObj.irszam)
         }
-      }, [isIrszamTyped(), keresoObj.irszam, telepulesObj.irszam]);
+      }, [isIrszamTyped()]);
 
 
     const renderKmOptions = () => {
@@ -227,6 +244,8 @@ const Ingatlanok = (props) => {
             </React.Fragment>
         );
     }
+
+    console.log('keresoObj: ', keresoObj);
 
     const renderKereso = () =>{
         return (
@@ -284,8 +303,8 @@ const Ingatlanok = (props) => {
                         type='text'
                         name='irszam'
                         id='irszam'
-                        value={keresoObj.irszam}
-                        onChange={(e) => handleInputChange(e, keresoObj, setKeresoObj)}
+                        value={telepulesObj.irszam}
+                        onChange={(e) => handleInputChange(e, telepulesObj, setTelepulesObj)}
                     />
                 </div>
                 <div className='col-md-4'>

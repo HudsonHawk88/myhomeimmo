@@ -10,7 +10,7 @@ const KeresoForm = (props) => {
     const navigate = useNavigate();
 
     const defaultTelepulesObj = {
-        telepulesnev: 'Zalaegerszeg',
+        telepulesnev: '',
         irszam: '',
         km: '0'
     }
