@@ -7,12 +7,13 @@ const handleInputChange = (e, obj, setObj) => {
 
     if (type === 'checkbox') {
         value = checked;
-    } 
+    }
 
     setObj({
         ...obj,
         [name]: value,
     });
+
 };
 
 const toBase64 = (file) => new Promise((resolve, reject) => {
