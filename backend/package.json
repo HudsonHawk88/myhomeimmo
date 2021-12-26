@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon index.js",
-    "prod": "pm2 start server.config.js"
+    "prod": "pm2 start server.config.js",
+    "stop:prod": "pm2 stop server.config.js"
   },
   "author": "Toth Gergo",
   "license": "ISC",
