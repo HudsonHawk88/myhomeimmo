@@ -1,0 +1,20 @@
+{
+  "name": "myhomeimmo.hu",
+  "version": "1.0.0",
+  "description": "My Home",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install-root": "npm i",
+    "install-frontend": "cd frontend && npm i",
+    "install-backend": "cd backend && npm i",
+    "install-all": "npm run install-root && npm run install-frontend && npm run install-backend",
+    "start-dev": "concurrently \"cd frontend && npm run dev\"",
+    "build": "cd frontend && npm run build:prod"
+  },
+  "dependencies": {
+    "concurrently": "6.4.0"
+  },
+  "keywords": [],
+  "author": "Tóth Gergő",
+  "license": "ISC"
+}
