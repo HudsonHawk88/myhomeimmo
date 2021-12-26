@@ -1,0 +1,73 @@
+@use "../variables/colors";
+@use "../functions/var" as *;
+
+.undernav {
+    display: flex;
+    min-width: 100% !important;
+    min-height: 400px;
+    margin: 0px;
+
+    &__carousel {
+        // max-height: 400px;
+        // min-height: 400px;
+        padding: 0px;
+        margin: 0px;
+    }
+
+    &__kereso {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background-color: var(themes-public-sidebarbg);
+        padding: 0px;
+    }
+
+    .accordion {
+        width: 100%;
+    }
+
+    .accordion-item {
+        border: none;
+        
+    }
+
+    .accordion-header {
+        display: block;
+
+        @media screen and (min-width: 768px) {
+            display: none;
+        }        
+    }
+
+    .accordion-collapse {
+        @media screen and (min-width: 768px) {
+            display: flex !important;
+        }        
+    }
+
+    .accordion-body {
+        background-color: var(themes-public-sidebarbg);
+        padding: 0px;
+    }
+
+    .accordion-button {
+        background-color: var(themes-public-collapsebg);
+        color: var(themes-public-collapsefontcolor);
+      
+
+        &::after {
+            color: var(themes-public-collapsefontcolor) !important;
+            border: none;
+        }
+    }
+
+    .image-gallery-description {
+        background-color: rgba($color: #000000, $alpha: 0.5);
+        height: fit-content;
+        width: 100%;
+        position: absolute;
+        bottom: 35px;
+        font-size: 1.2em;
+    }
+    
+}
