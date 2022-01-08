@@ -1,5 +1,7 @@
 const mysql = require("mysql2");
 const jwt = require('jsonwebtoken');
+const multer = require('multer');
+const fs = require('fs');
 
 const poolConnect = () => {
   const db_params = {
@@ -113,10 +115,10 @@ const createIngatlanokSql = `
         isAktiv BOOLEAN,
         isUjEpitesu BOOLEAN,
         rogzitIdo TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        rogzitoNev: text NOT NULL,
-        rogzitoEmail: text NOT NULL,
-        rogzitoTelefon: text NOT NULL,
-        rogzitoAvatar: json DEFAULT NULL
+        rogzitoNev text NOT NULL,
+        rogzitoEmail text NOT NULL,
+        rogzitoTelefon text NOT NULL,
+        rogzitoAvatar json DEFAULT NULL
     ) ENGINE=InnoDB;
 `;
 
@@ -155,6 +157,22 @@ ELSE SET NEW.refid = CONCAT(SUBSTR(@max_refid, 1, 6), LPAD(SUBSTR(@max_refid, 7)
 END IF; 
 END IF;`;
 
+const uploadFile = (files, upload) => {
+  
+  // upload(req, res, function (err) {
+  //     if (err instanceof multer.MulterError) {
+  //       console.log(err)
+  //         // A Multer error occurred when uploading.
+  //     } else if (err) {
+  //       console.log(err)
+  //         // An unknown error occurred when uploading.
+  //     }
+  //     console.log(files)
+  //     // Everything went fine. 
+  //     next()
+  // })
+}
+
 exports.poolConnect = poolConnect;
 exports.jwtparams = jwtparams;
 exports.useQuery = useQuery;
@@ -163,3 +181,4 @@ exports.hasRole = hasRole;
 exports.createIngatlanokSql = createIngatlanokSql;
 exports.createIngatlanokTriggerSql = createIngatlanokTriggerSql;
 exports.getTelepulesekByKm = getTelepulesekByKm;
+exports.uploadFile = uploadFile;

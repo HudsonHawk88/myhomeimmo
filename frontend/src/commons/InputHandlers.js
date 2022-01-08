@@ -40,4 +40,9 @@ const addFile = async (e, obj, setObj) => {
         });  
 }
 
-export { handleInputChange, addFile };
+const recaptchaOnChange = (ref) => {
+    ref.current.execute();
+    console.log(key);
+  }
+
+export { handleInputChange, addFile, recaptchaOnChange };

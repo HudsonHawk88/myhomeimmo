@@ -1,6 +1,7 @@
 import { Microservices } from "../../../commons/MicroServices";
 
 const applyJobUrl = window.location.origin + "/api/contactmail/jobApply";
+const rechaptchaUrl = 'https://www.google.com/recaptcha/api/siteverify?'
 
 export default class Services {
   // INGATLAN SZOLGALTATASOK START
@@ -20,4 +21,21 @@ export default class Services {
     return result;
   };
  // INGATLAN SZOLGALTATASOK END
+
+ // RECHAPTCHA START
+  
+  static checkRechaptcha = (keys) => {
+    let result = Microservices.fetchApi(rechaptchaUrl + new URLSearchParams(keys), {
+      method: "POST"
+      // mode: "cors",
+      // cache: "no-cache",
+      // headers: {
+      //   "Content-Type": "application/json"
+      // },
+      
+    });
+    return result;
+  };
+
+ // RECHAPTCHA END
 }

@@ -81,7 +81,7 @@ router.post("/", async (req, res) => {
               // if (resultEmail.rowCount === 0) {
               if (resultRole.length === 0) {
                 const sql = `INSERT INTO roles (label, leiras, value)
-                          VALUES ('${felvitelObj.nev}', '${felvitelObj.leiras}', '${felvitelObj.role}');`;
+                          VALUES ('${felvitelObj.label}', '${felvitelObj.leiras}', '${felvitelObj.value}');`;
                 roles.query(sql, (err) => {
                   if (!err) {
                     res.status(200).send({
@@ -197,6 +197,7 @@ router.delete("/", (req, res) => {
       });
     } else {
       if (user.roles && user.roles.length !== 0 && hasRole(JSON.parse(user.roles), ['SZUPER_ADMIN'])) {
+        const id = req.headers.id;
         if (id) {
           const sql = `DELETE FROM roles WHERE id='${id}';`;
           roles.query(sql, (err) => {

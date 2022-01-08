@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Input, Modal, ModalHeader, ModalBody, ModalFooter, Label, Card, CardTitle, CardBody, CardFooter } from 'reactstrap';
+import { Button, Input, Modal, ModalHeader, ModalBody, ModalFooter, Label, Card, CardTitle, CardBody, CardFooter, Form } from 'reactstrap';
 import BootstrapTable from 'react-bootstrap-table-next';
 import paginationFactory from 'react-bootstrap-table2-paginator';
 import filterFactory, { textFilter } from "react-bootstrap-table2-filter";
@@ -62,7 +62,7 @@ const Ingatlanok = (props) => {
     const [ orszagok, setOrszagok ] = useState([]);
     const [ telepulesek, setTelepulesek ] = useState([]);
     const [ telepulesekOpts, setTelepulesekOpts ] = useState([]);
-    const { addNotification, user } = props;
+    const { addNotification, user, ertekesito } = props;
 
     const isIrszamTyped = () => {
         if (helyseg.irszam && helyseg.irszam.length === 4) {
@@ -128,12 +128,27 @@ const Ingatlanok = (props) => {
         listIngatlanok();
         listOrszagok();
         listTelepulesek();
-        setFelado({
-            feladoNev: nevFormatter(user.nev),
-            feladoTelefon: telefonFormatter(user.telefon),
-            feladoEmail: user.email,
-            feladoAvatar: user.avatar
-        });
+    }
+
+    const getErtekesito = () => {
+        if (user.isErtekesito) {
+            setFelado({
+                feladoNev: nevFormatter(user.nev),
+                feladoTelefon: telefonFormatter(user.telefon),
+                feladoEmail: user.email,
+                feladoAvatar: user.avatar
+            });
+        } else {
+            if (ertekesito) {
+                setFelado({
+                    feladoNev: nevFormatter(ertekesito.nev) ,
+                    feladoTelefon: telefonFormatter(ertekesito.telefon),
+                    feladoEmail: ertekesito.email,
+                    feladoAvatar: ertekesito.avatar
+                });
+            }
+            
+        }
     }
 
     const getIngatlan = (id) => {
@@ -149,6 +164,13 @@ const Ingatlanok = (props) => {
     useEffect(() => {
         init();
       }, []);
+
+    useEffect(() => {
+        if (user) {
+            getErtekesito();
+        }
+        
+    }, [user, ertekesito])
     
       useEffect(() => {
         if (isIrszamTyped()) {
@@ -198,13 +220,23 @@ const Ingatlanok = (props) => {
             ...helyseg,
             irszam: '',
             telepules: '',
-        })
-        setFelado({
-            feladoNev: nevFormatter(user.nev),
-            feladoTelefon: telefonFormatter(user.telefon),
-            feladoEmail: user.email,
-            feladoAvatar: user.avatar
         });
+        if (user.isErtekesito) {
+            setFelado({
+                feladoNev: nevFormatter(user.nev),
+                feladoTelefon: telefonFormatter(user.telefon),
+                feladoEmail: user.email,
+                feladoAvatar: user.avatar
+            });
+        } else {
+            setFelado({
+                feladoNev: nevFormatter(ertekesito.nev),
+                feladoTelefon: telefonFormatter(ertekesito.telefon),
+                feladoEmail: ertekesito.email,
+                feladoAvatar: ertekesito.avatar
+            });
+        }
+        
         setCurrentId(null);
         toggleModal();
     }
@@ -342,7 +374,8 @@ const Ingatlanok = (props) => {
         );
     }
 
-    const onSubmit = () => {
+    const onSubmit = (e) => {
+        e.preventDefault();
         let kuldObj = ingatlanObj;
         kuldObj.helyseg = helyseg;
         if (kuldObj.helyseg.telepules.id) {
@@ -432,9 +465,9 @@ const Ingatlanok = (props) => {
         })
     }
 
-    const deleteImage = (src) => {
+    const deleteImage = (filename) => {
         let kepek = ingatlanObj.kepek;
-        let filtered = kepek.filter((kep) => kep.src !== src);
+        let filtered = kepek.filter((kep) => kep.filename !== filename);
         setIngatlanObj({
             ...ingatlanObj,
             kepek: filtered
@@ -473,13 +506,16 @@ const Ingatlanok = (props) => {
             let base64 = ''
               const reader = new FileReader()
         
-              reader.onabort = () => console.log('file reading was aborted')
-              reader.onerror = () => console.log('file reading has failed')
+              reader.onabort = () => console.log('file reading was aborted');
+              reader.onerror = () => console.log('file reading has failed');
               reader.onload = (event) => {
               // Do whatever you want with the file contents
               base64 = event.target.result;
                 kep = {
+                    preview: base64,
                     src: base64,
+                    file: file,
+                    filename: file.name,
                     title: file.name,
                     isCover: false
                 }
@@ -519,7 +555,9 @@ const Ingatlanok = (props) => {
                             
                             >
                             {ingatlanObj.kepek.map((item, index) => (
-                                <Draggable key={item.src} draggableId={item.src} index={index} isDragDisabled={item.isCover}>
+                                
+                                <Draggable key={item.title} draggableId={index.toString()} index={index} isDragDisabled={item.isCover}>
+
                                 {(provided, snapshot) => (
                                     <div
                                     className='col-md-3'
@@ -534,11 +572,11 @@ const Ingatlanok = (props) => {
                                     <Card key={index.toString()}>
                                         <CardTitle>{item.nev}</CardTitle>
                                         <CardBody>
-                                            <img style={imageStyle} src={item.src} alt={item.nev} />
+                                            <img style={imageStyle} src={item.src || item.preview} alt={item.nev} />
                                         </CardBody>
                                         <CardFooter>
                                             <Button hidden={!item.isCover} outline={item.isCover ? false : true} color='primary'>Elsődleges kép</Button>
-                                            <Button onClick={() => deleteImage(item.src)}>Törlés</Button>
+                                            <Button onClick={() => deleteImage(item.filename)}>Törlés</Button>
                                         </CardFooter>
                                     </Card>
                                     </div>
@@ -573,6 +611,7 @@ const Ingatlanok = (props) => {
     const renderModal = () => {
         return (
             <Modal isOpen={modalOpen} toggle={toggleModal} backdrop='static' size='lg'>
+                <Form onSubmit={onSubmit} encType='multipart/form-data'>
                 <ModalHeader>
                     {!currentId ? "Ingatlan hirdetés felvitele" : "Ingatlan hirdetés módosítása"}
                 </ModalHeader>
@@ -1052,9 +1091,10 @@ const Ingatlanok = (props) => {
                     </div>
                 </ModalBody>
                 <ModalFooter>
-                    <Button type='button' color='success' onClick={() => onSubmit()}>Mentés</Button>
+                    <Button type='submit' color='success'>Mentés</Button>
                     <Button type='button' color='secondary' onClick={() => toggleModal()}>Mégsem</Button>
                 </ModalFooter>
+                </Form>
             </Modal>
         );
     }

@@ -146,6 +146,42 @@ const Jogosultsagok = (props) => {
         );
     }
 
+    const handleDeleteClick = (id) => {
+        setCurrentId(id)
+        toggleDeleteModal();
+    }
+
+    const onDelete = () => {
+        Services.deleteRole(currentId).then((res) => {
+            if (!res.err) {
+                listRoles();
+                toggleDeleteModal();
+                addNotification('success', res.msg);
+            } else {
+                addNotification('error', res.err);
+            }
+        })
+    }
+
+    const renderDeleteModal = () => {
+        return (
+            <Modal isOpen={deleteModal} toggle={toggleDeleteModal}>
+                <ModalHeader>
+                    Jogosultság törlése
+                </ModalHeader>
+                <ModalBody>
+                    <div className='col-md-12'>
+                        {'Valóban törölni kívánja az adott tételt?'}
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <Button color='danger' onClick={() => onDelete()}>Igen</Button>
+                    <Button color='secondary' onClick={() => toggleDeleteModal()}>Mégsem</Button>
+                </ModalFooter>
+            </Modal>
+        );
+    }
+
     const tableIconFormatter = (cell, row, rowIndex) => {
         return (
           <React.Fragment>
@@ -161,7 +197,7 @@ const Jogosultsagok = (props) => {
               key={rowIndex + 4}
               color="link"
               hidden={row.value === 'SZUPER_ADMIN'}
-            //   onClick={() => handleDeleteClick(cell)}
+              onClick={() => handleDeleteClick(cell)}
             >
               <i key={rowIndex + 5} className="fas fa-trash" />
             </Button>
@@ -205,6 +241,7 @@ const Jogosultsagok = (props) => {
             <div className='col-md-12'>
                 <Button type='button' color='success' onClick={() => handleNewClick()}> + Jogosultság hozzáadása </Button><br /><br />
                 {renderModal()}
+                {renderDeleteModal()}
                 {renderTable()}
             </div>
         </div>

@@ -36,7 +36,7 @@ router.get('/', (req, res) => {
 
 router.get('/aktiv', (req, res) => {
   const id = req.headers.id;
-  const sql = id ? `SELECT * FROM ingatlanok WHERE id='${id}' AND isAktiv='0'` : `SELECT * FROM ingatlanok WHERE isAktiv='0';`;
+  const sql = id ? `SELECT * FROM ingatlanok WHERE id='${id}' AND isAktiv='0'` : `SELECT id, cim, leiras, helyseg, irsz, telepules, ar, kepek, kaucio, statusz, tipus, allapot, emelet, alapterulet, telek, telektipus, beepithetoseg, viz, gaz, villany, szennyviz, szobaszam, felszobaszam, epitesmod, futes, isHirdetheto, isKiemelt, isErkely, isLift, isAktiv, isUjEpitesu, rogzitoNev, rogzitoEmail, rogzitoTelefon FROM ingatlanok WHERE isAktiv='0';`;
   ingatlanok.query(sql, (err, result, rows) => {
     if (!err) {
       let ressss = result;

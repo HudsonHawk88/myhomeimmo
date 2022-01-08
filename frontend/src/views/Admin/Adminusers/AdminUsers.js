@@ -39,7 +39,8 @@ const AdminUsers = (props) => {
         username: '',
         password: '',
         avatar: [],
-        roles: []
+        roles: [],
+        isErtekesito: false
     }
 
     const [ orszagok, setOrszagok ] = useState([]);
@@ -182,7 +183,7 @@ const AdminUsers = (props) => {
                 setNev(res.nev);
                 setCim(res.cim);
                 setTelefon(res.telefon)
-                setAdminUser({ email: res.email, username: res.username, password: '', roles: res.roles, avatar: res.avatar !== 'undefined' ? res.avatar : [] })
+                setAdminUser({ email: res.email, username: res.username, password: '', roles: res.roles, avatar: res.avatar !== 'undefined' ? res.avatar : [], isErtekesito: res.isErtekesito })
             } else {
                 addNotification(res.err);
             }
@@ -534,7 +535,7 @@ const AdminUsers = (props) => {
                     <h4>Belépéshez szükséges adatok:</h4>
                     <br />
                     <div className='row'>
-                        <div className="col-md-4">
+                        <div className="col-md-3">
                             <Label>Email: *</Label>
                             <Input
                                 name="email"
@@ -544,7 +545,7 @@ const AdminUsers = (props) => {
                                 value={adminUser.email}
                             />
                         </div>
-                        <div className="col-md-4">
+                        <div className="col-md-3">
                             <Label>Felhasználónév: *</Label>
                             <Input
                                 name="username"
@@ -554,7 +555,7 @@ const AdminUsers = (props) => {
                                 value={adminUser.username}
                             />
                         </div>
-                        <div className="col-md-4">
+                        <div className="col-md-3">
                             <Label>Jelszó: *</Label>
                             <Input
                                 name="password"
@@ -562,6 +563,16 @@ const AdminUsers = (props) => {
                                 type="password"
                                 onChange={(e) => handleInputChange(e, adminUser, setAdminUser)}
                                 value={adminUser.password}
+                            />
+                        </div>
+                        <div className="col-md-3">
+                            <Label>Értékesítő: *</Label>
+                            <Input
+                                name="isErtekesito"
+                                id="isErtekesito"
+                                type="checkbox"
+                                onChange={(e) => handleInputChange(e, adminUser, setAdminUser)}
+                                checked={adminUser.isErtekesito}
                             />
                         </div>
                     </div>

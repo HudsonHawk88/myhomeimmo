@@ -11,14 +11,15 @@ import Publicroutes from './routes/Publicroutes';
 import Adminroutes from './routes/Adminroutes';
 import Login from './views/Pages/Login/Login';
 import { hasRole } from './commons/Lib';
+import process from 'process';
 
 function Main() {
   const [user, setUser] = useState(null);
+  const [ ertekesito, setErtekesito ] = useState(null);
   const [ ingatlanok, setIngatlanok ] = useState([]);
   const isAdmin = window.location.pathname.startsWith('/admin');
   const token = localStorage.getItem('refreshToken');
   let history = createBrowserHistory();
-
   const createNotification = (type, msg) => {
     switch (type) {
       case 'info':
@@ -40,6 +41,9 @@ function Main() {
     Services.refreshToken(token, isAdmin).then((res) => {
         if (!res.err) {
             setUser(res.user);
+            if (res.ertekesito && res.ertekesito !== {}) {
+              setErtekesito(res.ertekesito);
+            }
         }
     });
   }
@@ -94,7 +98,7 @@ function Main() {
 
   useEffect(() => {
         scrollToTop();
-  }, [window.location])
+  }, [window.location]);
   
   return (
     <React.Fragment>
@@ -102,12 +106,12 @@ function Main() {
     <Router navigator={history}>
       {isAdmin ? (
           user ? (
-            <Adminroutes hasRole={hasRole} addNotification={createNotification} history={history} user={user} logout={logout} />
+            <Adminroutes reCaptchaKey={process.env.reachaptchaApiKey} hasRole={hasRole} addNotification={createNotification} history={history} ertekesito={ertekesito ? ertekesito : null} user={user} logout={logout} />
           ) : (
-            <Login addNotification={createNotification} history={history} setUser={setUser} isAdmin={isAdmin} />
+            <Login reCaptchaKey={process.env.reachaptchaApiKey} addNotification={createNotification} history={history} setUser={setUser} setErtekesito={setErtekesito} isAdmin={isAdmin} />
           )
         ) : (
-          <Publicroutes addNotification={createNotification} ingatlanok={ingatlanok} history={history} />
+          <Publicroutes reCaptchaKey={process.env.reachaptchaApiKey} addNotification={createNotification} ingatlanok={ingatlanok} history={history} />
         )
       }
     </Router>

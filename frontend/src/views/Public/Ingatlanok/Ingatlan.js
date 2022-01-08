@@ -1,15 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, createRef } from 'react';
 import { Card, CardBody, CardHeader, Form, Label, Input, Button } from 'reactstrap';
+import ReCAPTCHA from "react-google-recaptcha";
 
-import { handleInputChange } from '../../../commons/InputHandlers';
+import { handleInputChange, recaptchaOnChange } from '../../../commons/InputHandlers';
 
 import Gallery from '../../../commons/Gallery';
 import Loading from '../../../commons/Loading';
 import Services from './Services';
 
 const Ingatlan = (props) => {
-    const { location, addNotification } = props;
+    const { location, addNotification, reCaptchaKey } = props;
     const { state } = location;
+    const recaptchaRef = createRef();
 
     const defaultIngatlanObj = {
         alapterulet: '',
@@ -243,20 +245,36 @@ const Ingatlan = (props) => {
         }
     }
 
-    const sendMail = () => {
+    const sendMail = async (e) => {
+        e.preventDefault();
         let kuldObj = emailObj;
         kuldObj.toEmail = ingatlanObj.rogzitoEmail;
         // kuldObj.toEmail = 'info@inftechsol.hu';
-        kuldObj.refId = ingatlanObj.refid
+        kuldObj.refId = ingatlanObj.refid;
 
-        Services.sendErdeklodes(kuldObj).then((res) => {
-            if (!res.err) {
-                addNotification('success', res.msg);
-                setEmailObj(defaultEmailObj);
-            } else {
-                addNotification('error', res.err);
+        const token = await recaptchaRef.current.executeAsync();
+        const secret = process.env.reachaptchaSecretKey;
+
+        const rechaptchaObj = {
+            secret: secret,
+            response: token
+          };
+
+          Services.checkRechaptcha(rechaptchaObj).then((res => {
+            if (res.success) {
+                Services.sendErdeklodes(kuldObj).then((res) => {
+                    if (!res.err) {
+                        addNotification('success', res.msg);
+                        setEmailObj(defaultEmailObj);
+                    } else {
+                        addNotification('error', res.err);
+                    }
+                });
             }
-        });
+            }
+          ));
+
+       
     }
 
     const getIlletek = (ar) => {
@@ -416,6 +434,7 @@ const Ingatlan = (props) => {
                     </div>
                 </div>
                 <div className='erdeklodes_form'>
+                    <Form onSubmit={sendMail}>
                     <div className='row'>
                         <div className='col-md-12'>
                             <Label>Név:</Label>
@@ -482,12 +501,19 @@ const Ingatlan = (props) => {
                         <div className='col-md-12' />
                         <br />
                         <div className='col-md-12'>
-                            <Button color='success' onClick={() => sendMail()} disabled={!elfogadAdatkezeles || emailObj.nev === '' || emailObj.telefon === '' || emailObj.email === '' || emailObj.uzenet === ''}>
+                            <ReCAPTCHA sitekey={reCaptchaKey} size='invisible' ref={recaptchaRef} onChange={() => { recaptchaRef.current.reset() }} />
+                            <Button color='success' disabled={!elfogadAdatkezeles || emailObj.nev === '' || emailObj.telefon === '' || emailObj.email === '' || emailObj.uzenet === ''}>
                                 <i className="fas fa-paper-plane"></i>
                                 &nbsp;&nbsp;Elküld
                             </Button>
+                            <br />
+                            <br />
+                            <span className='recaptcha_text'>
+                                Ez az oldal védve van a Google reCAPTCHA-val és érvényesek rá a Google <a href="https://policies.google.com/privacy">Adatvédelmi irányelvei</a> és az <a href="https://policies.google.com/terms">Általános Szerződési feltételei</a>.
+                            </span>
                         </div>
                     </div>
+                    </Form>
                 </div>
             </div>
         </div>

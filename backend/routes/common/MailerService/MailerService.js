@@ -32,6 +32,7 @@ router.post('/', (req, res) => {
 
 router.post('/ingatlanerd', (req, res) => {
   const emailObj = JSON.parse(JSON.stringify(req.body));
+ 
   transporter.sendMail(
     {
       from: `${emailObj.nev} <${emailObj.email}>`, // sender address
@@ -62,7 +63,8 @@ router.post('/jobApply', (req, res) => {
     transporter.sendMail(
       {
         from: `${emailObj.nev} <${emailObj.email}>`, // sender address
-        to: "berkimonika@myhomezala.hu", // list of receivers
+        // to: "berkimonika@myhomezala.hu", // list of receivers
+        to: "szaboivett22@gmail.com", // list of receivers
         subject: `Jelentkezés állásra`, // Subject line
         attachments: [{ filename: emailObj.oneletrajz.filename, content: emailObj.oneletrajz.data.split("base64,")[1], encoding: 'base64' }],
         html: `<b>Kedves Berki Mónika!</b><br><br>
@@ -111,7 +113,7 @@ router.post('/sendfromcontact', (req, res) => {
   transporter.sendMail(
     {
       from: `${emailObj.nev} <${emailObj.email}>`, // sender address
-      to: `${toEmail}`, // list of receivers
+      to: `${emailObj.toEmail}`, // list of receivers
       // to: `${emailObj.toEmail}`, // list of receivers
       subject: `Érdeklődés`, // Subject line
       html: `<b>Kedves Berki Mónika!</b><br><br>

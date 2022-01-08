@@ -27,6 +27,7 @@ router.get("/", async (req, res) => {
               resss.roles = JSON.parse(resss.roles);
               resss.telefon = JSON.parse(resss.telefon);
               resss.avatar = JSON.parse(resss.avatar);
+              resss.isErtekesito = resss.isErtekesito === 0 ? true : false
               res.status(200).send(resss);
             } else {
               res
@@ -75,7 +76,7 @@ router.post("/", async (req, res) => {
       if (
         user.roles &&
         user.roles.length !== 0 &&
-        hasRole(user.roles, ["SZUPER_ADMIN"])
+        hasRole(JSON.parse(user.roles), ["SZUPER_ADMIN"])
       ) {
         let felvitelObj = req.body;
         if (felvitelObj) {
@@ -92,7 +93,8 @@ router.post("/", async (req, res) => {
                     email text DEFAULT NULL,
                     password char(100) DEFAULT NULL,
                     token text(200) DEFAULT NULL,
-                    roles json
+                    roles json,
+                    isErtekesito bool
                   ) ENGINE=InnoDB;`;
           adminusers.query(sql, async (error) => {
             if (!error) {
@@ -101,8 +103,10 @@ router.post("/", async (req, res) => {
               const resultEmail = await useQuery(adminusers, sqlEmail);
               // if (resultEmail.rowCount === 0) {
               if (resultEmail.length === 0) {
-                const sql = `INSERT INTO adminusers (nev, cim, telefon, avatar, username, email, password, roles, token)
-                          VALUES ('${JSON.stringify(felvitelObj.nev)}', '${JSON.stringify(felvitelObj.cim)}', '${JSON.stringify(felvitelObj.telefon)}', '${JSON.stringify(felvitelObj.avatar)}', '${felvitelObj.username}', '${felvitelObj.email}', '${hash}', '${JSON.stringify(felvitelObj.roles)}', '${null}');`;
+                felvitelObj.isErtekesito = felvitelObj.isErtekesito === true ? 0 : 1;
+
+                const sql = `INSERT INTO adminusers (nev, cim, telefon, avatar, username, email, password, roles, token, isErtekesito)
+                          VALUES ('${JSON.stringify(felvitelObj.nev)}', '${JSON.stringify(felvitelObj.cim)}', '${JSON.stringify(felvitelObj.telefon)}', '${JSON.stringify(felvitelObj.avatar)}', '${felvitelObj.username}', '${felvitelObj.email}', '${hash}', '${JSON.stringify(felvitelObj.roles)}', '${null}', '${felvitelObj.isErtekesito}');`;
                 adminusers.query(sql, (err) => {
                   if (!err) {
                     res.status(200).send({
@@ -169,8 +173,9 @@ router.put("/", async (req, res) => {
         ) {
           if (id) {
             modositoObj = JSON.parse(JSON.stringify(modositoObj));
+            modositoObj.isErtekesito = modositoObj.isErtekesito === true ? 0 : 1;
             const hash = await bcrypt.hash(modositoObj.password, 10);
-            const sql = `UPDATE adminusers SET nev = '${JSON.stringify(modositoObj.nev)}', cim = '${JSON.stringify(modositoObj.cim)}', telefon = '${JSON.stringify(modositoObj.telefon)}', avatar = '${JSON.stringify(modositoObj.avatar)}', username = '${modositoObj.username}', email = '${modositoObj.email}', password = '${hash}', roles = '${JSON.stringify(modositoObj.roles)}' WHERE id = '${id}';`;
+            const sql = `UPDATE adminusers SET nev = '${JSON.stringify(modositoObj.nev)}', cim = '${JSON.stringify(modositoObj.cim)}', telefon = '${JSON.stringify(modositoObj.telefon)}', avatar = '${JSON.stringify(modositoObj.avatar)}', username = '${modositoObj.username}', email = '${modositoObj.email}', password = '${hash}', roles = '${JSON.stringify(modositoObj.roles)}', isErtekesito = '${modositoObj.isErtekesito}' WHERE id = '${id}';`;
             adminusers.query(sql, (err) => {
               if (!err) {
                 res

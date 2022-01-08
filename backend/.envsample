@@ -1,0 +1,16 @@
+HOST=host
+PORT=port
+dbhost=dbhost
+dbport=dbport
+dbuser=dbuser
+dbpass=dbpassword
+database=dbname
+DB_SSH_KEY=sshkey
+DB_SSH_HOST=sshhost
+DB_SSH_USER=sshuser
+DB_SSH_PASSWORD=sshpassword
+KEY_FILE=path_to_key_file
+CERT_FILE=path_to_crt_file
+JWT_EXPIRE=10min
+JWT_SECRET={1234ABCD-ABC123-ABC-1234-12345678AB}
+JWT_REFRESH_SECRET={1234567AE-1234-ABC-ABC123-1234ABCD}

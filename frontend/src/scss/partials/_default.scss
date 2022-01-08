@@ -30,6 +30,14 @@ html body {
     // }    
 }
 
+.grecaptcha-badge { 
+    visibility: hidden;
+}
+
+.recaptcha_text {
+    font-size: 12px;
+}
+
 .plus_nav {
     display: grid;
     grid-template-columns: auto;
@@ -289,6 +297,7 @@ html body {
     .reszletes_kereso {
         background-color: var(themes-public-reszl_keresobg);
         display: flex;
+        flex-wrap: wrap;
         padding: 20px;
         max-width: 100%;
 

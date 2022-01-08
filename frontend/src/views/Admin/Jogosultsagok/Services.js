@@ -70,7 +70,6 @@ export default class Services {
       };
 
       static deleteRole = (id) => {
-
         let result = Microservices.fetchApi(roleUrl, {
         method: "DELETE",
         cache: "no-cache",

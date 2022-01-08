@@ -34,7 +34,7 @@ const PublicHeader = (props) => {
         </div>
       </div>
       <Navbar expand="lg" light className='public-navbar' dark>
-        <img id="logo" />
+        <div id="logo" />
         <div className="navbar-toggler" onClick={() => toggleNavbar("public_navbar_collapse")}>
           <i className="fas fa-bars"></i>
         </div>

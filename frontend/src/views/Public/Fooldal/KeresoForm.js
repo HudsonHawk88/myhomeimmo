@@ -117,16 +117,16 @@ const KeresoForm = (props) => {
         let newKereso = {}
 
         const keys = Object.keys(keresoObj);
-        if (keresoObj['referenciaSzam'] !== '') {
-            newKereso['referenciaSzam'] = keresoObj.referenciaSzam;
-        } else {
+        // if (keresoObj['referenciaSzam'] !== '') {
+        //     newKereso['referenciaSzam'] = keresoObj.referenciaSzam;
+        // } else {
           keys.forEach((filter) => {
             if (keresoObj[filter] !== '') {
                 newKereso[filter] = keresoObj[filter];
                 newKereso.telepules = telepulesObj
             }
           })
-        }
+        // }
         return newKereso;
     }
 
@@ -168,8 +168,9 @@ const KeresoForm = (props) => {
     }
 
     return (
-        <div className='row' style={{ padding: '10px' }}>
-            <h4>Gyorskereső</h4><br />
+        <div className='row' style={{ padding: '20px' }}>
+            <h4>Gyorskereső</h4>
+            <div className='row g-2'>
             <div className='col-lg-6 col-md-12'>
                 <Label>Ingatlan státusza:</Label>
                 <Input
@@ -212,8 +213,8 @@ const KeresoForm = (props) => {
                     <option key='telek' value='Telek'>Telek</option>
                 </Input>
             </div>
-            <div className='col-md-12' />
-            <br />
+            </div>
+            <div className='row g-2'>
             <div className='col-lg-6 col-md-12'>
                 <Label>Irányítószám:</Label>
                 <Input
@@ -237,8 +238,8 @@ const KeresoForm = (props) => {
                     onChange={handleTelepulesChange}
                 />
             </div>
-            <div className='col-md-12' />
-            <br />
+            </div>
+            <div className='row g-2'>
             <div className='col-lg-3 col-md-6'>
                 <Label>Referenciaszám:</Label>
                 <Input
@@ -279,13 +280,14 @@ const KeresoForm = (props) => {
                     onChange={(e) => handleInputChange(e, keresoObj, setKeresoObj)}
                 />
             </div>
-            <div className='col-md-12' />
-            <br />
-            <div className='col-md-12'>
-                <Button color='success' onClick={() => keres()}>
-                    <i className="fas fa-search"></i>&nbsp;&nbsp;
-                    Keresés
-                </Button>
+            </div>
+            <div className='row g-2'>
+                <div className='col-md-12'>
+                    <Button color='success' onClick={() => keres()}>
+                        <i className="fas fa-search"></i>&nbsp;&nbsp;
+                        Keresés
+                    </Button>
+                </div>
             </div>
         </div>
     );

@@ -9,7 +9,7 @@ const AdminHeader = (props) => {
   return (
     <header>
       <Navbar color="warning" light className='admin-navbar'>
-        <img id="logo" />
+        <div id="logo" />
           <Nav className="me-auto" navbar>
             <NavItem>    
               <UncontrolledButtonDropdown>

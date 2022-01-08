@@ -1,51 +1,69 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, createRef } from 'react';
 import { Form, Input, Button, Label } from 'reactstrap';
 
 import { handleInputChange, addFile } from '../../../commons/InputHandlers';
-
+import ReCAPTCHA from "react-google-recaptcha";
+// import ReCAPTCHA from "react-google-recaptcha-enterprise";
 import Services from './Services';
 
 const MyJob = (props) => {
+    const recaptchaRef = createRef();
     const defaultJobObj = {
         nev: '',
         telefon: '',
         email: '',
         oneletrajz: ''
     }
-    const ref = useRef();
+    const ref = createRef();
 
     const [ jobObj, setJobObj ] = useState(defaultJobObj);
     const [ elfogadAdatkezeles, setElfogadAdatkezeles ] = useState(false);
     const [ elkuldte, setElkuldte ] = useState(false);
+    const [ verified, setVerified ] = useState(false);
 
-    const { addNotification } = props;
+    const { addNotification, reCaptchaKey } = props;
 
     const resetFIleInput = (id) => {
         let el = document.getElementById(id);
         el.click();
     }
 
-    const sendMail = (e) => {
+    const sendMail = async (e) => {
         e.preventDefault();
         let kuldObj = jobObj;
         if (kuldObj.oneletrajz === '') {
             delete kuldObj.oneletrajz;
         }
-        Services.sendJobApply(kuldObj).then((res) => {
-            if (!res.err) {
-                addNotification('success', res.msg);
-                setJobObj(defaultJobObj);
-                resetFIleInput('reset');
-                setElfogadAdatkezeles(false);
-                setElkuldte(true)
 
-                setTimeout(() => {
-                    setElkuldte(false)
-                }, 5000)
-            } else {
-                addNotification('error', res.err);
+        const token = await recaptchaRef.current.executeAsync();
+        const secret = process.env.reachaptchaSecretKey;
+
+        const rechaptchaObj = {
+            secret: secret,
+            response: token
+          };
+
+          Services.checkRechaptcha(rechaptchaObj).then((res => {
+            if (res.success) {
+                Services.sendJobApply(kuldObj).then((res) => {
+                    if (!res.err) {
+                        addNotification('success', res.msg);
+                        setJobObj(defaultJobObj);
+                        resetFIleInput('reset');
+                        setElfogadAdatkezeles(false);
+                        setElkuldte(true)
+    
+                        setTimeout(() => {
+                            setElkuldte(false)
+                        }, 5000)
+                    } else {
+                        addNotification('error', res.err);
+                    }
+                })
+                }
             }
-        })
+            
+          ));         
     }
 
     const renderJobForm = () => {
@@ -122,15 +140,22 @@ const MyJob = (props) => {
                 </div>
                 <div className='col-md-12' />
                 <br />
+                {/* <ReCAPTCHA ref={recaptchaRef} sitekey={reCaptchaKey} onChange={recaptchaOnChange} /> */}
+               
+                    {/* <ReCAPTCHA ref={recaptchaRef} sitekey={reCaptchaKey} /> */}
+                <ReCAPTCHA sitekey={reCaptchaKey} size='invisible' ref={recaptchaRef} onChange={() => { recaptchaRef.current.reset() }} />
                 <Button
                     color='success'
-                    type='submit'
-                    // onClick={() => sendMail()}
-                    disabled={!elfogadAdatkezeles || jobObj.nev === '' || jobObj.telefon === '' || jobObj.email === ''}
+                    type='submit'   
                 >
                     <i className="fas fa-paper-plane"></i>
                     &nbsp;&nbsp;Elküld
                 </Button>
+                <br />
+                <br />
+                <span className='recaptcha_text'>
+                    Ez az oldal védve van a Google reCAPTCHA-val és érvényesek rá a Google <a href="https://policies.google.com/privacy">Adatvédelmi irányelvei</a> és az <a href="https://policies.google.com/terms">Általános Szerződési feltételei</a>.
+                </span>
                 <button hidden type="reset" id='reset' />
                 </Form>
             </React.Fragment>

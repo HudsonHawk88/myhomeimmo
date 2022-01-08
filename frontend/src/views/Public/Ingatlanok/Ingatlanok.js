@@ -102,7 +102,10 @@ const Ingatlanok = (props) => {
         if (location && location.search) {
             let kereso = location.search.substring(1);
             kereso = JSON.parse('{"' + decodeURI(kereso).replace(/"/g, '\\"').replace(/&/g, '","').replace(/=/g,'":"') + '"}');
-            kereso.telepules = JSON.parse(kereso.telepules);
+            if (kereso && kereso.telepules !== 'undefined') {
+                kereso.telepules = JSON.parse(kereso.telepules);
+            }
+            
             const keresoObjKeys = Object.keys(keresoObj);
             const keresoKey = Object.keys(kereso);
             const newObj = {}
@@ -128,7 +131,6 @@ const Ingatlanok = (props) => {
                     }
                 })
             });
-            console.log('newObj: ', newObj);
             setKeresoObj(newObj);
             listIngatlanok(newObj);
         } else {
@@ -220,7 +222,6 @@ const Ingatlanok = (props) => {
     }
 
     useEffect(() => {
-        console.log(isIrszamTyped())
         if (isIrszamTyped()) {
           getTelepulesByIrsz(telepulesObj.irszam)
         }
@@ -245,14 +246,13 @@ const Ingatlanok = (props) => {
         );
     }
 
-    console.log('keresoObj: ', keresoObj);
-
     const renderKereso = () =>{
         return (
             <div className='reszletes_kereso' id='reszletes_kereso'>
                 
                 <div className='row'>
-                <h3>Összetett kereső:</h3><br/>
+                <h3>Összetett kereső:</h3>
+                <div className='row'>
                 <div className='col-md-6'>
                     <Label>Ingatlan státusza:</Label>
                     <Input
@@ -295,8 +295,8 @@ const Ingatlanok = (props) => {
                     <option key='telek' value='Telek'>Telek</option>
                 </Input>
                 </div>
-                <div className='col-md-12' />
-                <br />
+                </div>
+                <div className='row g-3'>
                 <div className='col-md-4'>
                     <Label>Irányítószám:</Label>
                     <Input
@@ -321,7 +321,7 @@ const Ingatlanok = (props) => {
                     />
                 </div>
                 <div className='col-md-4'>
-                    <Label>+ Km </Label>
+                    <Label>+ km </Label>
                     <Input
                         type='select'
                         name='km'
@@ -332,8 +332,8 @@ const Ingatlanok = (props) => {
                         {renderKmOptions()}
                     </Input>
                 </div>
-                <div className='col-md-12' />
-                <br />
+                </div>
+                <div className='row g-3'>
                 <div className='col-md-4'>
                     <Label>Max. ár: (Ft)</Label>
                     <Input
@@ -364,8 +364,8 @@ const Ingatlanok = (props) => {
                         onChange={(e) => handleInputChange(e, keresoObj, setKeresoObj)}
                     />
                 </div>
-                <div className='col-md-12' />
-                <br />
+                </div>
+                <div className='row g-3'>
                 <div className='col-md-4'>
                     <Label>Referencia szám:</Label>
                     <Input
@@ -396,8 +396,8 @@ const Ingatlanok = (props) => {
                         onChange={(e) => handleInputChange(e, keresoObj, setKeresoObj)}
                     />
                 </div>
-                <div className='col-md-12' />
-                <br />
+                </div>
+                <div className='row g-3'>
                 <div className='col-md-4'>
                     <Label>Építés módja: *</Label>
                     <Input
@@ -467,8 +467,8 @@ const Ingatlanok = (props) => {
                         <option key='uj' value='Új'>Új</option>
                     </Input>
                 </div>
-                <div className='col-md-12' />
-                <br />
+                </div>
+                <div className='row g-3'>
                 <div className='col-md-4'>
                     <Label>Erkély</Label>
                     &nbsp;&nbsp;
@@ -502,12 +502,15 @@ const Ingatlanok = (props) => {
                         onChange={(e) => handleInputChange(e, keresoObj, setKeresoObj)}
                     />
                 </div>
-                <div className='col-md-12' />
-                <br />
-                <Button color='success' onClick={() => keres()}>
-                    <i className="fas fa-search"></i>&nbsp;&nbsp;
-                    Keresés
-                </Button>
+                </div>
+                <div className='row'>
+                    <div className='col-md-12'>
+                        <Button color='success' onClick={() => keres()}>
+                            <i className="fas fa-search"></i>&nbsp;&nbsp;
+                            Keresés
+                        </Button>
+                    </div>
+                </div>
                 </div>
             </div>
         );

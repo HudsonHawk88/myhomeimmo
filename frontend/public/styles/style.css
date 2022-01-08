@@ -16,6 +16,14 @@ html body {
   min-height: 100vh;
 }
 
+.grecaptcha-badge {
+  visibility: hidden;
+}
+
+.recaptcha_text {
+  font-size: 12px;
+}
+
 .plus_nav {
   display: grid;
   grid-template-columns: auto;
@@ -893,6 +901,7 @@ html body {
 }
 .ingatlan_card .ingatlan_adatok .adatok .card-body {
   padding: 10px auto;
+  white-space: pre-line;
 }
 .ingatlan_card .ertekesito_adatok {
   background-color: #ffee8b;

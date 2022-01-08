@@ -20,25 +20,35 @@ router.post("/token", async (req, res) => {
   } else {
     //now that we know the refresh token is valid 
     //lets take an extra hit the database 
-    const sql = `SELECT username, roles, avatar, email, nev, telefon FROM adminusers WHERE token = '${token}';`;
+    const sql = `SELECT username, roles, avatar, email, nev, telefon, isErtekesito FROM adminusers WHERE token = '${token}';`;
     const result = await useQuery(adminusers, sql);
       if (result.length === 0) {
         res.sendStatus(401);
       } else {
         const user = result[0];
+        let ertekesito = {};
         const getUserAvatarSql = `SELECT avatar FROM adminusers WHERE email='${user.email}'`;
         const userAvatar = await useQuery(adminusers, getUserAvatarSql);
         user.roles = user.roles ? user.roles : []
         const avatar = userAvatar ? userAvatar[0].avatar : [];
         user.telefon = user.telefon ? user.telefon : {};
         user.nev = user.nev ? user.nev : {};
+        user.isErtekesito = user.isErtekesito === 0 ? true : false;
+        if (!user.isErtekesito) {
+          const getAdminSql = `SELECT nev, telefon, email, avatar FROM adminusers WHERE username='berkimonika';`;
+          const admin = await useQuery(adminusers, getAdminSql);
+          ertekesito['nev'] = JSON.parse(admin[0].nev);
+          ertekesito['telefon'] = JSON.parse(admin[0].telefon);
+          ertekesito['email'] = admin[0].email;
+          ertekesito['avatar'] = JSON.parse(admin[0].avatar);
+        }
         //sign my jwt 
-        const payLoad = { "name": user.username, "roles": user.roles, "email": user.email, "telefon": user.telefon, "nev": user.nev }
+        const payLoad = { "name": user.username, "roles": user.roles, "email": user.email, "telefon": user.telefon, "nev": user.nev, "isErtekesito": user.isErtekesito }
         //sign a brand new accesstoken and update the cookie
         const token = jwt.sign(payLoad, jwtparams.secret , { algorithm: 'HS256', expiresIn: jwtparams.expire})
         //maybe check if it succeeds..                          
         res.setHeader("set-cookie", [`JWT_TOKEN=${token}; httponly;`])  
-        res.status(200).send({ user: { username: user.username, avatar: JSON.parse(avatar), roles: JSON.parse(user.roles), email: user.email, telefon: JSON.parse(user.telefon), nev: JSON.parse(user.nev) }, token: token })
+        res.status(200).send({ user: { username: user.username, avatar: JSON.parse(avatar), roles: JSON.parse(user.roles), email: user.email, telefon: JSON.parse(user.telefon), nev: JSON.parse(user.nev), isErtekesito: user.isErtekesito }, ertekesito: ertekesito !== {} ? ertekesito : null, token: token })
       }
     }
 });
@@ -48,7 +58,7 @@ router.post("/login", async (req, res) => {
   let userObj = req.body
   // userObj = JSON.parse(userObj);
   if (userObj) {
-    const sql = `SELECT username, password, roles, avatar, nev, telefon, email FROM adminusers WHERE email = '${userObj.email}'`
+    const sql = `SELECT username, password, roles, avatar, nev, telefon, email, isErtekesito FROM adminusers WHERE email = '${userObj.email}'`
     
     const result = await useQuery(adminusers, sql);
     //fail
@@ -64,14 +74,24 @@ router.post("/login", async (req, res) => {
       //logged in successfully generate session
       if (successResult === true) {
         const user = result[0];
+        let ertekesito = {};
         const getUserAvatarSql = `SELECT avatar FROM adminusers WHERE email='${user.email}'`;
         const userAvatar = await useQuery(adminusers, getUserAvatarSql);
         user.roles = user.roles ? user.roles : null;
-        const avatar = userAvatar ? userAvatar[0].avatar : [];
+        let avatar = userAvatar ? userAvatar[0].avatar : [];
         user.telefon = user.telefon ? user.telefon : {};
         user.nev = user.nev ? user.nev : {};
+        user.isErtekesito = user.isErtekesito === 0 ? true : false;
+        if (!user.isErtekesito) {
+          const getAdminSql = `SELECT nev, telefon, email, avatar FROM adminusers WHERE username='berkimonika';`;
+          const admin = await useQuery(adminusers, getAdminSql);
+          ertekesito['nev'] = JSON.parse(admin[0].nev);
+          ertekesito['telefon'] = JSON.parse(admin[0].telefon);
+          ertekesito['email'] = admin[0].email;
+          ertekesito['avatar'] = JSON.parse(admin[0].avatar);
+        }
         //sign my jwt 
-        const payLoad = { "name": user.username, "roles": user.roles, "email": user.email, "telefon": user.telefon, "nev": user.nev }
+        const payLoad = { "name": user.username, "roles": user.roles, "email": user.email, "telefon": user.telefon, "nev": user.nev, "isErtekesito": user.isErtekesito }
         const token = jwt.sign(payLoad, jwtparams.secret , { algorithm: 'HS256', expiresIn: jwtparams.expire})
         const refreshtoken = jwt.sign(payLoad, jwtparams.refresh, { algorithm: 'HS256'})
         const updateSql = `UPDATE adminusers SET token = '${refreshtoken}' WHERE email = '${user.email}';`;
@@ -79,7 +99,7 @@ router.post("/login", async (req, res) => {
         adminusers.query(updateSql, (errrrr) => {
           if (!errrrr) {
             res.setHeader("set-cookie", [`JWT_TOKEN=${token}; httponly;`])
-            res.status(200).send({ user: { username: user.username, avatar: JSON.parse(avatar), roles: JSON.parse(user.roles), email: user.email, telefon: JSON.parse(user.telefon), nev: JSON.parse(user.nev) }, refreshToken: refreshtoken })
+            res.status(200).send({ user: { username: user.username, avatar: JSON.parse(avatar), roles: JSON.parse(user.roles), email: user.email, telefon: JSON.parse(user.telefon), nev: JSON.parse(user.nev), isErtekesito: user.isErtekesito }, ertekesito: ertekesito !== {} ? ertekesito : null, refreshToken: refreshtoken })
           }
         })
         //maybe check if it succeeds..                    

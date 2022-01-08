@@ -13,7 +13,7 @@ function Login(props) {
     password: ""
   });
 
-  const { setUser, history, addNotification } = props;
+  const { setUser, setErtekesito, history, addNotification } = props;
 
   const handleInputChange = (e) => {
     const value =
@@ -30,6 +30,9 @@ function Login(props) {
         if(!err) {
             localStorage.setItem('refreshToken', res.refreshToken);
             setUser(res.user);
+            if (res.ertekesito) {
+              setErtekesito(res.ertekesito);
+            }
             history.push('/admin')
         } else {
           addNotification('error', res.err)

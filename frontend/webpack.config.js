@@ -2,7 +2,8 @@
 const path = require('path');
 const isProduction = process.env.NODE_ENV == 'production';
 const target = isProduction ? 'web' : 'browserslist';
-
+require('dotenv').config();
+const { EnvironmentPlugin } = require('webpack');
 module.exports = {
     mode: isProduction ? 'production' : 'development',
     entry: './src/index.js',
@@ -12,6 +13,12 @@ module.exports = {
         publicPath: '/'
     },
     devtool: "source-map",
+    plugins: [
+      new EnvironmentPlugin({
+        reachaptchaApiKey: process.env.REACT_APP_recaptchakey,
+        reachaptchaSecretKey: process.env.REACT_APP_recaptchasecret
+      })
+    ],
     devServer: {
         static: {
             directory: path.join(__dirname, 'public'),
@@ -25,11 +32,11 @@ module.exports = {
             '/api': {
               target: 'https://myhomeimmo.hu/api',
             //   target: 'http://127.0.0.1:8001/api',
-              onProxyReq: (proxyReq) => {
-                if (proxyReq.getHeader('origin')) {
-                proxyReq.setHeader('origin', 'http://192.168.11.64:3000')
-                // proxyReq.setHeader('origin', 'http://192.168.2.182:3000')
-              }},
+              // onProxyReq: (proxyReq) => {
+              //   if (proxyReq.getHeader('origin')) {
+              //   proxyReq.setHeader('origin', 'http://192.168.11.64:3000')
+              //   // proxyReq.setHeader('origin', 'http://192.168.2.182:3000')
+              // }},
               pathRewrite: { '^/api': ''},
               changeOrigin: true,
               secure: false,

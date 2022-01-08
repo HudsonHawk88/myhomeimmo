@@ -3,7 +3,8 @@ import { Microservices } from "../../../commons/MicroServices";
 const ingatlanokUrl = window.location.origin + "/api/ingatlanok/aktiv";
 const keresIngatlanokUrl = window.location.origin + "/api/ingatlanok/keres";
 const telepulesekUrl = window.location.origin + "/api/telepulesek";
-const emailUrl = window.location.origin + '/api/contactmail/ingatlanerd'
+const emailUrl = window.location.origin + '/api/contactmail/ingatlanerd';
+const rechaptchaUrl = 'https://www.google.com/recaptcha/api/siteverify?'
 
 export default class Services {
   // INGATLANOK START
@@ -192,6 +193,23 @@ export default class Services {
   };
 
   // TELEPÜLÉSEK END
+
+  // RECHAPTCHA START
+  
+  static checkRechaptcha = (keys) => {
+    let result = Microservices.fetchApi(rechaptchaUrl + new URLSearchParams(keys), {
+      method: "POST"
+      // mode: "cors",
+      // cache: "no-cache",
+      // headers: {
+      //   "Content-Type": "application/json"
+      // },
+      
+    });
+    return result;
+  };
+
+  // RECHAPTCHA END
 
   // EMAIL START 
 

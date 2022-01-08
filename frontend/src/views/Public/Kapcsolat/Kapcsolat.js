@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Label, Input, Button } from 'reactstrap';
+import React, { useState, useEffect, createRef } from 'react';
+import { Form, Label, Input, Button } from 'reactstrap';
 
-import { handleInputChange } from '../../../commons/InputHandlers';
+
+import { handleInputChange, recaptchaOnChange } from '../../../commons/InputHandlers';
+import ReCAPTCHA from "react-google-recaptcha";
 
 import Services from './Services';
 
 const Kapcsolat = (props) => {
-
+    const recaptchaRef = createRef();
     const defaultEmailObj = {
         ok: '',
         nev: '',
         email: '',
         telefon: '',
-        uzenet: ''
+        uzenet: '',
+        toEmail: ''
     }
 
     const [ kapcsolat, setKapcsolat ] = useState([]);
@@ -20,7 +23,7 @@ const Kapcsolat = (props) => {
     const [ elfogadAdatkezeles, setElfogadAdatkezeles ] = useState(false);
     const [ elkuldte, setElkuldte ] = useState(false);
 
-    const { addNotification } = props;
+    const { addNotification, reCaptchaKey } = props;
 
     const getKapcsolat = () => {
         Services.listKapcsolat().then((res) => {
@@ -38,19 +41,36 @@ const Kapcsolat = (props) => {
         init();
     }, []);
 
-    const sendMail = (toEmail) => {
+    const sendMail = async (e, toEmail) => {
+        e.preventDefault();
         let kuldObj = emailObj;
         kuldObj.toEmail = toEmail;
 
-        Services.sendEmail(kuldObj).then((res) => {
-            if (!res.err) {
-                addNotification('success', res.msg);
-                setEmailObj(defaultEmailObj);
-                setElfogadAdatkezeles(false)
-            } else {
-                addNotification('error', res.err);
+        const token = await recaptchaRef.current.executeAsync();
+        const secret = process.env.reachaptchaSecretKey;
+
+        const rechaptchaObj = {
+            secret: secret,
+            response: token
+          };
+
+          Services.checkRechaptcha(rechaptchaObj).then((res => {
+            if (res.success) {
+                Services.sendEmail(kuldObj).then((res) => {
+                    if (!res.err) {
+                        addNotification('success', res.msg);
+                        setEmailObj(defaultEmailObj);
+                        setElfogadAdatkezeles(false)
+                    } else {
+                        addNotification('error', res.err);
+                    }
+                })
             }
-        })
+            }
+          ));
+
+
+        
     }
 
     const renderKapcsolat = () => {
@@ -94,6 +114,7 @@ const Kapcsolat = (props) => {
                                 <div className='col-md-12' />
                                 <br />
                                 <div className='kapcsolat_form_inputs'>
+                                    <Form onSubmit={(e) => sendMail(e, item.email)}>
                                     <div className='row'>
                                         <div className='col-md-12'>
                                             <Label>Megkeresés oka: </Label>
@@ -171,18 +192,25 @@ const Kapcsolat = (props) => {
                                         </div>
                                         <div className='col-md-12' />
                                         <br />
+                                        
                                         <div className='col-md-12'>
+                                            <ReCAPTCHA sitekey={reCaptchaKey} size='invisible' ref={recaptchaRef} onChange={() => { recaptchaRef.current.reset() }} />
                                             <Button
                                                 color='success'
-                                                type='button'
-                                                onClick={() => sendMail(item.email)}
+                                                type='submit'
                                                 disabled={!elfogadAdatkezeles || emailObj.nev === '' || emailObj.telefon === '' || emailObj.email === '' || emailObj.ok === '' || emailObj.uzenet === ''}
                                             >
                                                 <i className="fas fa-paper-plane"></i>
                                                 &nbsp;&nbsp;Elküld
                                             </Button>
+                                            <br />
+                                            <br />
+                                            <span className='recaptcha_text'>
+                                                Ez az oldal védve van a Google reCAPTCHA-val és érvényesek rá a Google <a href="https://policies.google.com/privacy">Adatvédelmi irányelvei</a> és az <a href="https://policies.google.com/terms">Általános Szerződési feltételei</a>.
+                                            </span>
                                         </div>
                                     </div>
+                                    </Form>
                                 </div>
                             </div>
                         </div>
