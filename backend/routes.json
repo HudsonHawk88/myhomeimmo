@@ -16,6 +16,7 @@
       "/ingatlanok/keres",
       "/ingatlanok/aktiv",
       "/ingatlanok/ujepites",
+      "/ingatlanok/ingatlanokapi",
       "/admin/ingatlanok",
       "/ingatlanszolg",
       "/penzugyszolg",
@@ -38,6 +39,8 @@
       "/contactmail",
       "/contactmail/ingatlanerd",
       "/contactmail/jobApply",
-      "/contactmail/sendfromcontact"
+      "/contactmail/sendfromcontact",
+      "/getOcTitle",
+      "getOcImage"
     ]
   }

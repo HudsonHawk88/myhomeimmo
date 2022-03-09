@@ -46,7 +46,7 @@ const NavLink = ({ history, to, state, search, children, onClick, ...props }) =>
 
   
     return (
-        <span id={to} className={`${isAdmin ? 'admin-sidebar__navlink nav-link' : 'nav-link'}`} onClick={() => navigate()}>
+        <span id={to} {...props} className={`${isAdmin ? 'admin-sidebar__navlink nav-link' : 'nav-link'}`} onClick={() => navigate()}>
             {children}
         </span>
     );

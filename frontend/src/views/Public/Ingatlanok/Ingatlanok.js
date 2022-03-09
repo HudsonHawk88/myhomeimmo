@@ -163,10 +163,12 @@ const Ingatlanok = (props) => {
         setLoading(true);
         Services.keresesIngatlanok(kereso).then((res) => {
             if (!res.err) {
+                // console.log(res);
                 setIngatlanok(res)
                 setLoading(false);
             }
         })
+        // console.log(ingatlanok);
     }
 
     const listTelepulesek = () => {

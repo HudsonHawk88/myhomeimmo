@@ -8,7 +8,7 @@ router.get("/", async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   if (token) {
     const id = req.headers.id;
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     if (user === null) {
       res.status(401).send({
         err: "Nincs belépve! Kérem jelentkezzen be!"
@@ -55,7 +55,7 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   if (token) {
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     if (user === null) {
       res.status(401).send({
         err: "Nincs belépve! Kérem jelentkezzen be!"
@@ -138,7 +138,7 @@ router.post("/", async (req, res) => {
 router.put("/", async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   if (token) {
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     if (user === null) {
       res.status(401).send({
         err: "Nincs belépve! Kérem jelentkezzen be!"
@@ -194,11 +194,11 @@ router.put("/", async (req, res) => {
   }
 });
 
-router.delete("/", (req, res) => {
+router.delete("/", async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   const id = req.headers.id;
   if (token) {
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     if (user === null) {
       res.status(401).send({
         err: "Nincs belépve! Kérem jelentkezzen be!"

@@ -84,8 +84,9 @@ const Public = (props) => {
 
     const getItems = () => {
         let items = [];
-        ingatlanok.forEach((ingatlan, index) => {
-            let kep = JSON.parse(JSON.stringify(ingatlan.kepek[0]));
+        
+        ingatlanok && ingatlanok.forEach((ingatlan, index) => {
+            let kep = ingatlan && ingatlan.kepek && ingatlan.kepek.length !== 0 && JSON.parse(JSON.stringify(ingatlan.kepek[0]));
             items.push({
                 original: kep.src,
                 thumbnail: kep.src,

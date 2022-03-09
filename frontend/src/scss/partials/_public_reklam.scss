@@ -1,0 +1,51 @@
+.reklam_container {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 170px;
+}
+
+.reklamdiv {
+    display: flex;
+    flex-direction: column;
+    min-width: calc(50vw - 85px);
+    max-width: calc(50vw - 85px);
+    min-height: calc(50vh - 85px);
+    max-height: calc(50vh - 85px);
+    font-size: 30px;
+
+    &__kep {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: inherit;
+        height: 50%;
+        width: 100%;
+
+        img {
+            width: inherit;
+            height: 100%;
+        }
+    }
+
+    &__cim {
+        width: 100%;
+        text-align: center;
+    }
+
+    &__refid {
+        width: 100%;
+        text-align: center;
+    }
+
+    &__leiras {
+        width: 100%;
+        text-align: center;
+    }
+
+    &__ar {
+        text-align: left;
+        font-weight: bold;
+    }
+
+}

@@ -20,6 +20,88 @@ const jwtparams = {
   expire: process.env.JWT_EXPIRE,
 };
 
+const getTypeForXml = (type) => {
+  switch(type) {
+    case 'Lakás': {
+      return 1;
+    }
+    case 'Családi ház': {
+      return 2;
+    }
+    case 'Telek': {
+      return 3;
+    }
+    case 'Iroda': {
+      return 4;
+    }
+    case 'Üzlethelyiség': {
+      return 5;
+    }
+    case 'Ipari ingatlan': {
+      return 6;
+    }
+    case 'Garázs': {
+      return 7;
+    }
+    case 'Vendéglátó hely': {
+      return 9;
+    }
+    case 'Fejlesztési terület': {
+      return 10
+    }
+    case 'Irodaház': {
+      return 11;
+    }
+    case 'Szálláshely': {
+      return 12;
+    }
+    case 'Mezőgazdasági terület': {
+      return 13;
+    }
+    default: {
+      return 2;
+    }
+  }
+}
+
+const getAllapotForXml = (allapot, tipus) => {
+  if (tipus === 'Lakás' || tipus === 'Családi ház' || tipus === 'Vendéglátóhely' || tipus === 'Szálláshely' || tipus === 'Iroda' || tipus === 'Sorház' || tipus === 'Üzlethelyiség' || tipus === 'Hétvégi ház/Nyaraló') {
+    switch(allapot) {
+      case 'Átlagos': {
+        return `<property-condition>3 - Lakható</property-condition>`;
+      }
+      case 'Felújítandó': {
+        return `<property-condition>2 - Felújítandó</property-condition>`;
+      }
+      case 'Jó': {
+        return `<property-condition>4 - Jó</property-condition>`;
+      }
+      case 'Kiváló': {
+        return `<property-condition>5 - Nagyon jó</property-condition>`;
+      }
+      case 'Új': {
+        return `<property-condition>Új ép.</property-condition>`;
+      }
+      default: {
+        return `<property-condition>3 - Lakható</property-condition>`;
+      }
+    }
+  } else return '';
+}
+
+const getKepekForXml = (kepek, data) => {
+  let kepekdata = '';
+  kepek.forEach((kep) => {
+    if (kep.isCover) {
+      kepekdata += `<image url='${kep.src}' main-image="t"/>`;
+    } else {
+      kepekdata += `<image url='${kep.src}'/>`;
+    }
+  
+  })
+  return kepekdata;
+}
+
 const useQuery = (pool, sql) => {
   return new Promise((data) => {
     // console.log(pool)
@@ -39,7 +121,7 @@ const useQuery = (pool, sql) => {
   });
 };
 
-const validateToken = (token, secret) => {
+const validateToken = async (token, secret) => {
   try {
     const result = jwt.verify(token, secret);
 
@@ -92,6 +174,7 @@ const createIngatlanokSql = `
         kepek json DEFAULT NULL,
         ar text DEFAULT NULL,
         kaucio text DEFAULT NULL,
+        penznem text DEFAULT NULL,
         statusz text DEFAULT NULL,
         tipus text DEFAULT NULL,
         allapot text DEFAULT NULL,
@@ -150,8 +233,7 @@ WHEN 'Ikerház' THEN 'hm-ik-'
 WHEN 'Sorház' THEN 'hm-so-' 
 WHEN 'Raktár' THEN 'hm-ra-' 
 WHEN 'Hétvégi ház/nyaraló' THEN 'hm-ny-' 
-ELSE 'UNKNOWN' 
-END; 
+ELSE 'UNKNOWN'
 SET NEW.refid = CONCAT(@refid, '000001'); 
 ELSE SET NEW.refid = CONCAT(SUBSTR(@max_refid, 1, 6), LPAD(SUBSTR(@max_refid, 7) + 1, 6, '0')); 
 END IF; 
@@ -182,3 +264,6 @@ exports.createIngatlanokSql = createIngatlanokSql;
 exports.createIngatlanokTriggerSql = createIngatlanokTriggerSql;
 exports.getTelepulesekByKm = getTelepulesekByKm;
 exports.uploadFile = uploadFile;
+exports.getTypeForXml = getTypeForXml;
+exports.getAllapotForXml = getAllapotForXml;
+exports.getKepekForXml = getKepekForXml;

@@ -4,6 +4,7 @@ const ingatlanokUrl = window.location.origin + "/api/ingatlanok";
 const ingatlanokAdminUrl = window.location.origin + "/api/admin/ingatlanok";
 const orszagokUrl = window.location.origin + "/api/orszagok";
 const telepulesekUrl = window.location.origin + "/api/telepulesek";
+const generateXmlUrl = window.location.origin + "/api/ingatlanok/ingatlanokapi"
 
 export default class Services {
   // INGATLANOK START
@@ -38,15 +39,18 @@ export default class Services {
   };
 
   static addEIngatlan = (data) => {
+
+    // console.log(data);
     let result = Microservices.fetchApi(ingatlanokAdminUrl, {
       method: "POST",
       mode: "cors",
       cache: "no-cache",
       headers: {
-        "Content-Type": "application/json",
+        // "Content-Type": "multipart/form-data",
+        // "Content-type": "application/x-www-form-urlencoded",
         "Access-Control-Allow-Origin": "http://192.168.11.64:3000",
       },
-      body: JSON.stringify(data),
+      body: data,
     });
     return result;
   };
@@ -57,11 +61,11 @@ export default class Services {
       mode: "cors",
       cache: "no-cache",
       headers: {
-        "Content-Type": "application/json",
+        // "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "http://192.168.11.64:3000",
         id: id,
       },
-      body: JSON.stringify(data),
+      body: data,
     });
     return result;
   };
@@ -171,6 +175,20 @@ export default class Services {
         "Access-Control-Allow-Origin": "http://192.168.11.64:3000",
         like: like,
       },
+    });
+
+    return result;
+  };
+
+  static generateXml = () => {
+    let result = Microservices.fetchApi(generateXmlUrl, {
+      method: "GET",
+      mode: "cors",
+      cache: "no-cache",
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "http://192.168.11.64:3000"
+      }
     });
 
     return result;

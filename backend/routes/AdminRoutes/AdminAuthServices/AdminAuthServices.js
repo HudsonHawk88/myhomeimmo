@@ -6,7 +6,9 @@ const jwt = require('jsonwebtoken');
 
 router.post("/token", async (req, res) => {
   const token = req.headers.refreshtoken;
-  const user = validateToken(token, jwtparams.refresh);
+  const user = await validateToken(token, jwtparams.refresh);
+  // console.log("TOKEN: ", token);
+  // console.log("USER: ", user);
   if (user === null) {
     const sql = `UPDATE adminusers SET token=NULL WHERE token='${token}';`;
     adminusers.query(sql, (error) => {
@@ -69,16 +71,15 @@ router.post("/login", async (req, res) => {
       const saltedPassword = await result[0].password;
       
       const successResult = bcrypt.compareSync(userObj.password, saltedPassword);
-      bcrypt.compareSync(userObj.password, saltedPassword)
     
       //logged in successfully generate session
       if (successResult === true) {
         const user = result[0];
         let ertekesito = {};
-        const getUserAvatarSql = `SELECT avatar FROM adminusers WHERE email='${user.email}'`;
-        const userAvatar = await useQuery(adminusers, getUserAvatarSql);
+        // const getUserAvatarSql = `SELECT avatar FROM adminusers WHERE email='${user.email}'`;
+        // const userAvatar = await useQuery(adminusers, getUserAvatarSql);
         user.roles = user.roles ? user.roles : null;
-        let avatar = userAvatar ? userAvatar[0].avatar : [];
+        let avatar = user.avatar ? user.avatar : [];
         user.telefon = user.telefon ? user.telefon : {};
         user.nev = user.nev ? user.nev : {};
         user.isErtekesito = user.isErtekesito === 0 ? true : false;

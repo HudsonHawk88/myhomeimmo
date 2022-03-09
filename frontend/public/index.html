@@ -1,10 +1,72 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- <script>
+      let result = undefined;
+      let fbMetaTitle = undefined;
+      let fbMetaImage = undefined;
+      let imageSrc = undefined; 
+      async function getOcDatas() {
+        
+        let pathname = window.location.pathname;
+        let startIndex = pathname.lastIndexOf('/');
+        let endIndex = pathname.length;
+        let id = pathname.slice(startIndex + 1, endIndex);
+        
+
+        if (window.location.pathname.startsWith('/ingatlan')) {
+          
+          result = await fetch(`${window.location.origin}/api/ingatlanok/aktiv`, {
+          method: 'GET',
+          headers: {
+            id: id,
+          }
+          }).then(res => res.json()).then(data => {
+            let datas = {
+              ocImage: '',
+              ocTitle: '',
+              ocDesc: ''
+            };
+            datas.ocTitle = data[0].cim;
+            datas.ocImage = data[0].kepek[0].src;
+            datas.ocDesc = data[0].leiras;
+            return datas;
+          });
+        }
+        console.log("ID AND DATAS: ", id, result);
+        fbMetaTitle = document.createElement('meta');
+        fbMetaImage = document.createElement('meta');
+        // fbMetaTitle.property = 'og:title';
+        fbMetaTitle.setAttribute('property', 'og:title');
+        fbMetaTitle.content = result.ocTitle !== '' ? result.ocTitle : "Myhome, ahová jó megérkezni!"
+        fbMetaImage.setAttribute('property', 'og:image');
+        fbMetaImage.content = result.ocImage !== '' ? result.ocImage : "https://myhomeimmo.hu/images/logomegoszt2.png";
+        // const fbMetaTitle = () => <meta property="og:title" content={result.ocTitle !== '' ? result.ocTitle : "Myhome, ahová jó megérkezni!"} />
+        // const fbMetaImage = () => <meta property="og:image" content={result.ocImage !== '' ? result.ocImage : "https://myhomeimmo.hu/images/logomegoszt2.png"} />
+
+        console.log(JSON.stringify(result))
+        
+        fbMeta = `
+          <meta property="og:title" content={${result.ocTitle !== '' ? result.ocTitle : "Myhome, ahová jó megérkezni!"}>
+          <meta property="og:image" content={${result.ocImage !== '' ? result.ocImage : "https://myhomeimmo.hu/images/logomegoszt2.png"}}>
+        `;
+
+        
+       
+        document.head.append(fbMetaTitle);
+        document.head.append(fbMetaImage);
+        console.log(document.head)
+      }
+      getOcDatas();
+
+     
+    </script> -->
     <meta charset="utf-8" />
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-    <meta property="og:title" content="Myhome, ahová jó megérkezni!">
-    <meta property="og:image" content="https://myhomeimmo.hu/images/logomegoszt2.png">
+    
+    <meta property="og:title" content="http://teszt.myhomeimmo.inftechsol.hu:8460/api/getOcTitle?id=4">
+    <meta property="og:image" content="http://teszt.myhomeimmo.inftechsol.hu:8460/api/getOcImage?id=4">
+    
     <link rel="icon" href="/images/logo.jpg" />
     <link rel="stylesheet" href="/styles/bootstrap-utilities.min.css">
     <link rel="stylesheet" href="/styles/bootstrap.min.css">
@@ -27,6 +89,8 @@
     <title>MyHome - Ingatlanközvetítő iroda</title>
   </head>
   <body>
+    <div id="fb-root"></div>
+    <script async defer crossorigin="anonymous" src="https://connect.facebook.net/hu_HU/sdk.js#xfbml=1&version=v13.0&appId=996475810974610&autoLogAppEvents=1" nonce="atH8W5Mk"></script>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
     <script src="/bundle.js"></script>

@@ -42,6 +42,7 @@ const KeresoForm = (props) => {
             });
         });
         setTelepulesekOpts(telOpts);
+        // console.log(telOpts.length);
         if (telOpts.length === 1) {
             setTelepulesObj({
                 ...telepulesObj,
@@ -68,9 +69,9 @@ const KeresoForm = (props) => {
         }
     };
 
-    useEffect(() => {
-        listTelepulesek();
-    }, []);
+    // useEffect(() => {
+        
+    // }, []);
 
     const getTelepulesekByIrsz = (irszam) => {
         Services.getTelepulesByIrsz(irszam).then((res) => {
@@ -95,6 +96,7 @@ const KeresoForm = (props) => {
         if (isIrszamTyped()) {
           getTelepulesekByIrsz(keresoObj.irszam);
         } else {
+            listTelepulesek();
             getTelepulesekOpts(telepulesek);
             setTelepulesObj(defaultTelepulesObj)
         }

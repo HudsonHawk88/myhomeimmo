@@ -30,8 +30,8 @@ module.exports = {
         historyApiFallback: true,
         proxy: {
             '/api': {
-              target: 'https://myhomeimmo.hu/api',
-            //   target: 'http://127.0.0.1:8001/api',
+              // target: 'https://myhomeimmo.hu/api',
+              target: 'http://teszt.myhomeimmo.inftechsol.hu:8460/api',
               // onProxyReq: (proxyReq) => {
               //   if (proxyReq.getHeader('origin')) {
               //   proxyReq.setHeader('origin', 'http://192.168.11.64:3000')
@@ -40,7 +40,7 @@ module.exports = {
               pathRewrite: { '^/api': ''},
               changeOrigin: true,
               secure: false,
-              cookieDomainRewrite: 'http://192.168.11.64',
+              // cookieDomainRewrite: 'http://192.168.11.64',
               // cookieDomainRewrite: 'http://192.168.2.182',
               withCredentials: true,
             }

@@ -9,7 +9,7 @@ import Loading from '../../../commons/Loading';
 import Services from './Services';
 
 const Ingatlan = (props) => {
-    const { location, addNotification, reCaptchaKey } = props;
+    const { match, location, addNotification, reCaptchaKey } = props;
     const { state } = location;
     const recaptchaRef = createRef();
 
@@ -17,6 +17,7 @@ const Ingatlan = (props) => {
         alapterulet: '',
         allapot: '',
         ar: '',
+        penznem: '',
         beepithetoseg: '',
         cim: '',
         emelet: '',
@@ -78,8 +79,11 @@ const Ingatlan = (props) => {
     }
 
     useEffect(() => {
-        getIngatlan(state.id);
-    }, [state.id]);
+        const lastPer = location.pathname.lastIndexOf('/');
+        let pathname = location.pathname;
+        let id = pathname.slice(lastPer + 1, pathname.length);
+        getIngatlan(id);
+    }, [location]);
 
 
     const getKepek = () => {
@@ -146,13 +150,13 @@ const Ingatlan = (props) => {
         }
         switch (ingatlan.statusz) {
             case 'Kiadó': {
-                return `Ár: ${ar} Ft/hó ${ingatlanObj.kaucio ? 'Kaució: ' + kaucio + ' Ft' : '' }`;
+                return `Ár: ${ar} ${ingatlanObj.penznem}/hó ${ingatlanObj.kaucio ? 'Kaució: ' + kaucio + ' ' + ingatlanObj.penznem : '' }`;
             }
             case 'Illeték': {
-                return `${illetek} Ft`
+                return `${illetek} ${ingatlanObj.penznem}`
             }
             default: {
-                return `Ár: ${ar} Ft`;
+                return `Ár: ${ar} ${ingatlanObj.penznem}`;
             } 
         }
     }
@@ -281,7 +285,7 @@ const Ingatlan = (props) => {
         let illetek = '';
         let ingar = parseInt(ar, 10);
         if (ingar && !isNaN(ar)) {
-            illetek = ingar*0.04;
+            illetek = Math.round(ingar*0.04);
             illetek = illetek + '';
         }
         return arFormatter({ illetek: illetek, statusz: 'Illeték' });
@@ -291,6 +295,8 @@ const Ingatlan = (props) => {
         let kep = getAvatar(ingatlanObj.rogzitoAvatar);
         return (
             <div className='ingatlan_card'>
+            {/* <meta property="og:title" content={ingatlanObj.cim} /> */}
+            {/* <meta property="og:image" content={ingatlanObj.kepek[0].src} /> */}
             <div className='ingatlan_adatok'>
                 <div className='ingatlan_cim'>
                     {ingatlanObj.cim}
@@ -433,6 +439,7 @@ const Ingatlan = (props) => {
                         {ingatlanObj.rogzitoTelefon}
                     </div>
                 </div>
+                <div class="fb-share-button" data-href={`http://teszt.myhomeimmo.inftechsol.hu:8460/ingatlan/${ingatlanObj.id}`} data-layout="button" data-size="large"><a target="_blank" href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fdevelopers.facebook.com%2Fdocs%2Fplugins%2F&amp;src=sdkpreparse" class="fb-xfbml-parse-ignore">Megosztás</a></div>
                 <div className='erdeklodes_form'>
                     <Form onSubmit={sendMail}>
                     <div className='row'>

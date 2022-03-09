@@ -8,6 +8,7 @@ import "react-responsive-carousel/lib/styles/carousel.min.css";
 import 'react-bootstrap-table2-paginator/dist/react-bootstrap-table2-paginator.min.css';
 import Services from './views/Pages/Login/Services';
 import Publicroutes from './routes/Publicroutes';
+import ReklamRoutes from './routes/ReklamRoutes';
 import Adminroutes from './routes/Adminroutes';
 import Login from './views/Pages/Login/Login';
 import { hasRole } from './commons/Lib';
@@ -111,7 +112,11 @@ function Main() {
             <Login reCaptchaKey={process.env.reachaptchaApiKey} addNotification={createNotification} history={history} setUser={setUser} setErtekesito={setErtekesito} isAdmin={isAdmin} />
           )
         ) : (
-          <Publicroutes reCaptchaKey={process.env.reachaptchaApiKey} addNotification={createNotification} ingatlanok={ingatlanok} history={history} />
+          window.location.pathname.startsWith('/reklam') ? (
+            <ReklamRoutes addNotification={createNotification} ingatlanok={ingatlanok} history={history} />
+          ) : (
+            <Publicroutes reCaptchaKey={process.env.reachaptchaApiKey} addNotification={createNotification} ingatlanok={ingatlanok} history={history} />
+          )
         )
       }
     </Router>

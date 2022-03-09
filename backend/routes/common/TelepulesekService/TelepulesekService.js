@@ -40,7 +40,7 @@ router.get('/', (req, res) => {
       }
     );
   } else {
-    const sql = `SELECT * FROM telep_1 GROUP BY telepulesnev;`;
+    const sql = `SELECT id, geoLat, geoLong, irszam, telepulesnev, megye, megyekod FROM telep_1 GROUP BY telepulesnev;`;
     telepulesek.query(sql, (err, result) => {
       if (!err) {
         res.status(200).send(result);

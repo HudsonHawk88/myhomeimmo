@@ -1,7 +1,10 @@
 // const { Pool } = require("pg");
 const router = require('express').Router();
-const { poolConnect, getTelepulesekByKm } = require('../../../common/QueryHelpers');
+const { poolConnect, getTelepulesekByKm, getTypeForXml, getAllapotForXml, getKepekForXml, useQuery } = require('../../../common/QueryHelpers');
 const ingatlanok = poolConnect();
+const xml = require("xml");
+const { existsSync, mkdirSync, writeFileSync, rmSync } = require('fs');
+const path = require('path');
 
 // INGATLANOK START
 
@@ -35,6 +38,40 @@ router.get('/', (req, res) => {
 });
 
 router.get('/aktiv', (req, res) => {
+  // const id = req.headers.id;
+  const id = req.headers.id;
+
+  const sql = id ? `SELECT * FROM ingatlanok WHERE id='${id}' AND isAktiv='0'` : `SELECT id, refid, cim, leiras, helyseg, irsz, telepules, ar, kepek, kaucio, penznem, statusz, tipus, allapot, emelet, alapterulet, telek, telektipus, beepithetoseg, viz, gaz, villany, szennyviz, szobaszam, felszobaszam, epitesmod, futes, isHirdetheto, isKiemelt, isErkely, isLift, isAktiv, isUjEpitesu, rogzitoNev, rogzitoEmail, rogzitoTelefon FROM ingatlanok WHERE isAktiv='0';`;
+  ingatlanok.query(sql, (err, result, rows) => {
+    if (!err) {
+      let ressss = result;
+      ressss.map((ing) => {
+        ing.kepek = JSON.parse(ing.kepek);
+        if (!id) {
+          ing.kepek = ing.kepek.filter((kep) => kep.isCover);
+          
+        } else {
+          ing.rogzitoAvatar = JSON.parse(ing.rogzitoAvatar)
+        }
+
+        
+        ing.helyseg = JSON.parse(ing.helyseg);
+        ing.isHirdetheto = ing.isHirdetheto === 0 ? true : false;
+        ing.isKiemelt = ing.isKiemelt === 0 ? true : false;
+        ing.isErkely = ing.isErkely === 0 ? true : false;
+        ing.isLift = ing.isLift === 0 ? true : false;
+        ing.isAktiv = ing.isAktiv === 0 ? true : false;
+        ing.isUjEpitesu = ing.isUjEpitesu === 0 ? true : false;
+      });
+      res.status(200).send(ressss);
+    } else {
+      res.status(500).send({ err: err });
+    }
+  });
+});
+
+router.get('/ingatlan/:id', (req, res) => {
+  // const id = req.headers.id;
   const id = req.headers.id;
   const sql = id ? `SELECT * FROM ingatlanok WHERE id='${id}' AND isAktiv='0'` : `SELECT id, cim, leiras, helyseg, irsz, telepules, ar, kepek, kaucio, statusz, tipus, allapot, emelet, alapterulet, telek, telektipus, beepithetoseg, viz, gaz, villany, szennyviz, szobaszam, felszobaszam, epitesmod, futes, isHirdetheto, isKiemelt, isErkely, isLift, isAktiv, isUjEpitesu, rogzitoNev, rogzitoEmail, rogzitoTelefon FROM ingatlanok WHERE isAktiv='0';`;
   ingatlanok.query(sql, (err, result, rows) => {
@@ -177,6 +214,71 @@ router.post('/keres', async (req, res) => {
     }
   });
 });
+
+router.get("/ingatlanokapi", (req, res, next) => {
+  let sql = `SELECT * FROM ingatlanok WHERE isAktiv='0' AND isHirdetheto='0';`;
+  let data = `<?xml version="1.0" encoding="UTF-8"?>`;
+  data += `<items>`;
+  ingatlanok.query(sql, async (error, result) => {
+    const ingatlanJson = result;
+    if (!error) {
+      await Promise.all(ingatlanJson.map(async (ingatlan) => {
+        const getLatLongSql = `SELECT geoLat, geoLong FROM telep_1 WHERE irszam='${ingatlan.irsz}';`
+        const latLong = await useQuery(ingatlanok, getLatLongSql);
+        const kepek = JSON.parse(ingatlan.kepek);
+        data += `<item refnum="${ingatlan.refid}"> 
+        <agent-name>${ingatlan.rogzitoNev}</agent-name>
+        <agent-email>${ingatlan.rogzitoEmail}</agent-email>
+        <agent-phone>${ingatlan.rogzitoTelefon}</agent-phone>
+        <status>${'Aktív'}</status>
+        <type>${getTypeForXml(ingatlan.tipus)}</type>
+        <refnum>${ingatlan.refid}</refnum>
+        <city>${ingatlan.telepules}</city>
+        <zip>${ingatlan.irsz}</zip>
+        <mbtyp>${ingatlan.statusz}</mbtyp>
+        <price>${ingatlan.ar}</price>
+        <currency>${'HUF'}</currency>
+        ${ingatlan.tipus !== 'Telek' && ingatlan.tipus !== 'Fejlesztési terület' && ingatlan.tipus !== 'Mezőgazdasági terület' && 
+          `<sqrm>${ingatlan.alapterulet}</sqrm>`
+        }
+        ${ingatlan.tipus === 'Telek' || ingatlan.tipus === 'Fejlesztési terület' || ingatlan.tipus === 'Mezőgazdasági terület' ? 
+          `<land>${ingatlan.telek}</land>
+           <ltyp>Egyéb</ltyp>
+          `
+        : ''}
+        <note>
+        <![CDATA[${ingatlan.leiras}]]>
+        </note>
+        <lat>${latLong[0].geoLat}</lat>
+        <lng>${latLong[0].geoLong}</lng>
+  
+        ${getAllapotForXml(ingatlan.allapot, ingatlan.tipus)}
+        ${ingatlan.emelet ? `<floor>${ingatlan.emelet}</floor>` : ''}
+        <builds>${ingatlan.epitesmod}</builds>
+        <htyp>${ingatlan.futes}</htyp>
+        <images>
+          ${getKepekForXml(kepek, data)}
+        </images>
+        </item>`;
+        return data
+      }))
+      data += `</items>`;
+      const dir = `/home/eobgycvo/public_html/xml/ingatlanok/`;
+      let exist = existsSync(dir);
+      if (!exist) {
+        mkdirSync(path.normalize(dir));
+        
+      }
+      writeFileSync(path.join(dir, 'ingatlanapi.xml'), data);
+      writeFileSync(path.join(dir, 'ingatlanapi.txt'), data);
+      res.status(200).send({ msg: 'XML file generálása sikeres!' });
+      } else {
+        res.status(500).send({ err: 'XML file generálása sikertelen!' })
+      }
+    
+    });
+});
+
 
 // INGATLANOK END
 

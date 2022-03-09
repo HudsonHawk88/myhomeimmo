@@ -10,6 +10,7 @@ require('dotenv').config({
 const express = require("express");
 const app = express();
 const cors = require("cors");
+const bodyParser = require('body-parser')
 const fs = require("fs");
 const http = require("http");
 //const https = require("https");
@@ -51,9 +52,10 @@ const publicMyArt = require('./routes/PublicRoutes/MyArt/publicMyArtServices');
 const orszagokService = require("./routes/common/OrszagokService/OrszagokService");
 const telepulesekService = require("./routes/common/TelepulesekService/TelepulesekService");
 const mailerService = require("./routes/common/MailerService/MailerService");
+const ocDataServices = require("./routes/common/OcDataService/OcDataServices");
 
 app.use(express.json({
-  limit: '50mb'
+  limit: '150mb'
 }));
 app.use(cookieParser());
 app.use(routesJson.routes, (req, res, next) => {
@@ -65,9 +67,16 @@ app.use(routesJson.routes, (req, res, next) => {
 
 app.options("*", cors());
 app.use(cookieParser());
-
+app.use(bodyParser.json()) // for parsing application/json
+app.use(bodyParser.urlencoded({ extended: true })) // for parsing application/x-www-form-urlencoded
+// const multer = require('multer');
+// const upload = multer({ 
+//   dest: 'uploads/'
+//  })
+// app.use(upload.any());
 // PUBLIC AUTH
 // app.use(publicAuthSerice);
+app.use(["/"], ocDataServices);
 app.use(["/admin"], adminAuthService);
 // PUBLIC USERS
 // //app.use(["/users"], publicusersServices);

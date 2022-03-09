@@ -4,6 +4,7 @@ const ingatlanokUrl = window.location.origin + "/api/ingatlanok/aktiv";
 const keresIngatlanokUrl = window.location.origin + "/api/ingatlanok/keres";
 const telepulesekUrl = window.location.origin + "/api/telepulesek";
 const mailUrl = window.location.origin + "/api/contactmail";
+const ingatlanUrl = window.location.origin + "/api/ingatlanok"
 
 export default class Services {
   // INGATLANOK START
@@ -38,7 +39,7 @@ export default class Services {
   };
 
   static getIngatlan = (id) => {
-    let result = Microservices.fetchApi(ingatlanokUrl, {
+    let result = Microservices.fetchApi(ingatlanUrl + `/${id}`, {
       method: "GET",
       mode: "cors",
       cache: "no-cache",
@@ -47,6 +48,7 @@ export default class Services {
         "Content-Type": "application/json",
         id: id,
       },
+      // query: id
     });
 
     return result;

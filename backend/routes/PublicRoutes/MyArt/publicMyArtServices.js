@@ -21,9 +21,9 @@ router.get('/galeriak', (req, res) => {
     myArt.query(sql, (err, result) => {
       if (!err) {
           let ress = result;
-          res.forEach((item) => {
+          ress.map((item) => {
               item.kepek = JSON.parse(item.kepek);
-              item.isActive = item.isActive === '0' ? true : false
+              item.isActive = item.isActive === 0 ? true : false
           });
           res.status(200).send(ress);
       } else {

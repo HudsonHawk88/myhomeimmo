@@ -93,6 +93,15 @@ const MyArtGaleriak = (props) => {
         })
     }
 
+    const deleteImage = (filename) => {
+        let kepek = myArtGaleriakObj.kepek;
+        let filtered = kepek.filter((kep) => kep.filename !== filename);
+        setMyArtGaleriakObj({
+            ...myArtGaleriakObj,
+            kepek: filtered
+        })
+    }
+
     const MyDropzone = () => {
         const imageStyle = {
             // maxHeight: '100%',
@@ -104,13 +113,16 @@ const MyArtGaleriak = (props) => {
             let base64 = ''
               const reader = new FileReader()
         
-              reader.onabort = () => console.log('file reading was aborted')
-              reader.onerror = () => console.log('file reading has failed')
+              reader.onabort = () => console.log('file reading was aborted');
+              reader.onerror = () => console.log('file reading has failed');
               reader.onload = (event) => {
               // Do whatever you want with the file contents
               base64 = event.target.result;
                 kep = {
+                    preview: base64,
                     src: base64,
+                    file: file,
+                    filename: file.name,
                     title: file.name,
                     isCover: false
                 }
@@ -141,7 +153,7 @@ const MyArtGaleriak = (props) => {
                         
                         >
                         {myArtGaleriakObj.kepek.map((item, index) => (
-                            <Draggable key={item.src} draggableId={item.src} index={index} isDragDisabled={item.isCover}>
+                            <Draggable key={item.title} draggableId={index.toString()} index={index} isDragDisabled={item.isCover}>
                             {(provided, snapshot) => (
                                 <div
                                 className='col-md-3'
@@ -156,10 +168,10 @@ const MyArtGaleriak = (props) => {
                                 <Card key={index.toString()}>
                                     <CardTitle>{item.nev}</CardTitle>
                                     <CardBody>
-                                        <img style={imageStyle} src={item.src} alt={item.nev} />
+                                        <img style={imageStyle} src={item.src || item.preview} alt={item.nev} />
                                     </CardBody>
                                     <CardFooter>
-                                        <Button onClick={() => deleteImage(item.src)}>Törlés</Button>
+                                        <Button onClick={() => deleteImage(item.filename)}>Törlés</Button>
                                     </CardFooter>
                                 </Card>
                                 </div>
@@ -176,15 +188,6 @@ const MyArtGaleriak = (props) => {
         </React.Fragment>
           )
       }
-
-    const deleteImage = (src) => {
-        let kepek = myArtGaleriakObj.kepek;
-        let filtered = kepek.filter((kep) => kep.src !== src);
-        setMyArtGaleriakObj({
-            ...myArtGaleriakObj,
-            kepek: filtered
-        })
-    }
 
     const getGaleria = (id) => {
         Services.getGaleria(id).then((res) => {

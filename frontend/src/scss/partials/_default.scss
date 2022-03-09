@@ -80,6 +80,10 @@ html body {
 //     }
 // }
 
+.fb-share-button {
+    height: 30px;
+}
+
 .tel {
     font-size: 15px;
     white-space: wrap;
@@ -248,6 +252,46 @@ html body {
         }
     }
 
+    .public_myart {
+        width: 100%;
+        height: 100%;
+        padding: 20px;
+        background-color: rgb(255, 238, 139);
+        margin: 0px;
+
+       
+
+        @media screen and (min-width: 950px) {
+            margin: 0px 15%;
+        }
+
+        .myart_galeriak {
+            display: flex;
+            gap: 10px;
+        }
+
+        .galeria_cim {
+            text-align: center;
+        }
+
+        .muvesz_adatok {
+            // display: flex;
+            // justify-content: center;
+            .col-md-12 {
+                text-align: justify;
+            }
+        }
+
+        .muvesz_kepek {
+            display: flex;
+
+            img {
+                margin: 10px;
+                width: 30%;
+            }
+        }
+    }
+
     .penzugyi_szolgaltatas {
         width: 100%;
         height: 100%;
@@ -274,13 +318,19 @@ html body {
     }
 
     .adatkezeles {
-        padding: 20px 5%;
+        display: flex;
+        background-color: #ffee8b;
+        margin: 0px auto;
         max-width: 100%;
-        background-color: rgb(255, 238, 139);
-        margin: 0px;
+        padding: 20px 5vw;
+        width: 100%;
 
         @media screen and (min-width: 950px) {
-            margin: 0px 15%;
+            width: 80%;
+        }
+
+        &__leiras {
+            max-width: 100%;
         }
     }
    

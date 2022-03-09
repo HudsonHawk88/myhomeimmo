@@ -42,7 +42,7 @@ const addFile = async (e, obj, setObj) => {
 
 const recaptchaOnChange = (ref) => {
     ref.current.execute();
-    console.log(key);
+    // console.log(key);
   }
 
 export { handleInputChange, addFile, recaptchaOnChange };

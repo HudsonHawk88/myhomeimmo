@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Input, Label, Card, CardTitle, CardBody, CardFooter } from 'reactstrap';
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter, Input, Label, Card, CardTitle, CardBody, CardFooter, Form } from 'reactstrap';
 import Select from 'react-select';
 import BootstrapTable from 'react-bootstrap-table-next';
 import { useDropzone } from 'react-dropzone';
@@ -216,14 +216,73 @@ const AdminUsers = (props) => {
         toggleModal();
     }
 
-    const onSave = () => {
-        let user = JSON.parse(JSON.stringify(adminUser));
+    const onSave = (e) => {
+        e.preventDefault();
+        let user = adminUser;
         user.nev = nev;
         user.cim = cim;
         user.telefon = telefon;
 
+        let datas = new FormData();
+
+
         if (!currentId) {
-            Services.addAdminUser(user).then((res) => {
+            for ( var key in user ) {
+                if(key === 'avatar' || key === 'telefon' || key === 'cim' || key === 'nev' || key === 'roles' || key === 'password') {
+                    if (key === 'avatar') {
+                        // console.log(user.avatar);
+                        user.avatar.forEach((kep) => {
+                            if (kep.file) {
+                                datas.append('avatar', kep.file)
+                                // console.log(kep);
+                            }
+                            
+                        });
+                        
+                    } else if (key === 'password') {
+                        if (user[key] !== '') {
+                            datas.append(key, user[key]);
+                        }
+                    } else {
+                        datas.append(key, JSON.stringify(user[key]));
+                    }
+                    
+                } else {
+                    datas.append(key, user[key]);
+                }
+            }
+        } else {
+            for ( var key in user ) {
+                if(key === 'avatar' || key === 'telefon' || key === 'cim' || key === 'nev' || key === 'roles' || key === 'password') {
+                    if (key === 'avatar') {
+                        // console.log(user.avatar);
+                        user.avatar.forEach((kep) => {
+                            if (kep.file) {
+                                datas.append('uj_avatar', kep.file)
+                                // console.log(kep);
+                            } else {
+                                datas.append('avatar', JSON.stringify(kep))
+                            }
+                        });
+                        
+                    } else if (key === 'password') {
+                        if (user[key] !== '') {
+                            datas.append(key, user[key]);
+                        }
+                    } else {
+                        datas.append(key, JSON.stringify(user[key]));
+                    }
+                    
+                } else {
+                    datas.append(key, user[key]);
+                }
+            }
+        }
+
+ 
+
+        if (!currentId) {
+            Services.addAdminUser(datas).then((res) => {
                 if (!res.err) {
                     toggleModal();
                     listAdminUsers();
@@ -233,7 +292,7 @@ const AdminUsers = (props) => {
                 }
             })
         } else {
-            Services.editAdminUser(user, currentId).then((res) => {
+            Services.editAdminUser(datas, currentId).then((res) => {
                 if (!res.err) {
                     toggleModal();
                     listAdminUsers();
@@ -270,23 +329,30 @@ const AdminUsers = (props) => {
               reader.onabort = () => console.log('file reading was aborted')
               reader.onerror = () => console.log('file reading has failed')
               reader.onload = (event) => {
+                //   console.log(file);
               // Do whatever you want with the file contents
               base64 = event.target.result;
-                kep = {
-                    src: base64,
-                    title: file.name
+              const obj = {
+                    filename: file.name,
+                    title: file.name,
+                    isCover: false,
+                    preview: URL.createObjectURL(file),
+                    src: URL.createObjectURL(file),
+                    file: file
                 }
+
+                // console.log(event.target.result);
                 
                 setAdminUser({
                     ...adminUser,
-                    avatar: [...adminUser.avatar, kep]
+                    avatar: [...adminUser.avatar, obj]
                 })
         
               }
            
              
         
-              reader.readAsDataURL(file)
+              reader.readAsBinaryString(file)
             })
             
           }, []);
@@ -305,7 +371,7 @@ const AdminUsers = (props) => {
                             <Card key={index.toString()} className='col-md-3'>
                                 <CardTitle>{kep.nev}</CardTitle>
                                 <CardBody>
-                                    <img style={imageStyle} src={kep.src} alt={kep.nev} />
+                                    <img style={imageStyle} src={kep.src || kep.preview} alt={kep.nev} />
                                 </CardBody>
                                 <CardFooter>
                                     <Button onClick={() => deleteImage(kep.src)}>Törlés</Button>
@@ -321,12 +387,15 @@ const AdminUsers = (props) => {
 
 
     const renderModal = () => {
+        // console.log(adminUser);
         return (
             <Modal isOpen={modalOpen} toggle={toggleModal} size='xl' backdrop='static'>
+                <Form onSubmit={onSave} encType="multipart/form-data">
                 <ModalHeader>
                     {!currentId ? 'Admin felhasználó hozzáadása' : 'Admin felhasználó módosítása'}
                 </ModalHeader>
                 <ModalBody>
+                    
                     <h4>Alapadatok:</h4>
                     <br />
                     <div className="row">
@@ -528,7 +597,7 @@ const AdminUsers = (props) => {
                         <br />
                         <div className='col-md-12'>
                             <Label>Avatar: *</Label>
-                            <MyDropzone multiple={false}  />
+                            <MyDropzone multiple  />
                         </div>
                     </div>
                     <hr />
@@ -576,11 +645,13 @@ const AdminUsers = (props) => {
                             />
                         </div>
                     </div>
+                
                 </ModalBody>
                 <ModalFooter>
-                    <Button color='success' onClick={() => onSave()}>Mentés</Button>
-                    <Button color='secondary' onClick={() => toggleModal()}>Mégsem</Button>
+                    <Button color='success' type='submit'>Mentés</Button>
+                    <Button color='secondary' type='button' onClick={() => toggleModal()}>Mégsem</Button>
                 </ModalFooter>
+                </Form>
             </Modal>
         );
     }

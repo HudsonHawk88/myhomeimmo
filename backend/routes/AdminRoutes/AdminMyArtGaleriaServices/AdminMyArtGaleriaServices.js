@@ -1,6 +1,8 @@
 const { jwtparams, useQuery, poolConnect, validateToken, hasRole } = require('../../../common/QueryHelpers');
 const router = require("express").Router();
 const myArt = poolConnect();
+const { existsSync, mkdirSync, writeFileSync, rmSync } = require('fs');
+const path = require('path');
 
 // MYARTALTALANOS START
 
@@ -8,7 +10,7 @@ router.get("/altalanos", async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   if (token) {
     const id = req.headers.id;
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     // const user = { roles: [{ value: "SZUPER_ADMIN"}]}
     if (user === null) {
       res.status(401).send({
@@ -51,7 +53,7 @@ router.get("/altalanos", async (req, res) => {
 router.post("/altalanos", async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   if (token) {
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     // const user = { roles: [{ value: "SZUPER_ADMIN"}] };
     if (user === null) {
       res.status(401).send({
@@ -130,7 +132,7 @@ router.post("/altalanos", async (req, res) => {
 router.put("/altalanos", async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   if (token) {
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     // const user = { roles: [{ value: "SZUPER_ADMIN"}] };
     if (user === null) {
       res.status(401).send({
@@ -187,11 +189,11 @@ router.put("/altalanos", async (req, res) => {
   }
 });
 
-router.delete("/altalanos", (req, res) => {
+router.delete("/altalanos", async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   const id = req.headers.id;
   if (token) {
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     if (user === null) {
       res.status(401).send({
         err: "Nincs belépve! Kérem jelentkezzen be!"
@@ -239,7 +241,7 @@ router.get("/galeriak", async (req, res) => {
     const token = req.cookies.JWT_TOKEN;
     if (token) {
       const id = req.headers.id;
-      const user = validateToken(token, jwtparams.secret);
+      const user = await validateToken(token, jwtparams.secret);
       // const user = { roles: [{ value: "SZUPER_ADMIN"}]}
       if (user === null) {
         res.status(401).send({
@@ -254,7 +256,7 @@ router.get("/galeriak", async (req, res) => {
                 let resss = result[0];
                 if (resss.kepek) {
                     resss.kepek = JSON.parse(resss.kepek);
-                    resss.isActive = resss.isActive === '0' ? true : false
+                    resss.isActive = resss.isActive === 0 ? true : false
                 }
                 // resss.isActive = resss.isActive === '0' ? true : false;
                 res.status(200).send(resss);
@@ -273,8 +275,8 @@ router.get("/galeriak", async (req, res) => {
               res.status(500).send({ err: 'Hiba történt a MyArt Általános bejegyzés lekérdezésekor!' });
             } else {
                 let resss = ress;
-                resss.forEach((item) => {
-                    item.isActive = item.isActive === '0' ? true : false;
+                resss.map((item) => {
+                    item.isActive = item.isActive === 0 ? true : false;
                 })
               res.status(200).send(resss);
             }
@@ -291,7 +293,7 @@ router.get("/galeriak", async (req, res) => {
   router.post("/galeriak", async (req, res) => {
     const token = req.cookies.JWT_TOKEN;
     if (token) {
-      const user = validateToken(token, jwtparams.secret);
+      const user = await validateToken(token, jwtparams.secret);
       // const user = { roles: [{ value: "SZUPER_ADMIN"}] };
       if (user === null) {
         res.status(401).send({
@@ -306,7 +308,7 @@ router.get("/galeriak", async (req, res) => {
           let felvitelObj = req.body;
           if (felvitelObj) {
             felvitelObj = JSON.parse(JSON.stringify(felvitelObj));
-            felvitelObj.isActive = felvitelObj.isActive === true ? '0' : '1';
+            felvitelObj.isActive = felvitelObj.isActive === true ? 0 : 1;
             //store user, password and role
             const sql = `CREATE TABLE IF NOT EXISTS eobgycvo_myhome.myart_galeriak (
                       id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -327,17 +329,55 @@ router.get("/galeriak", async (req, res) => {
                 const result= await useQuery(myArt, myArtGaleriakSql);
                 // if (resultEmail.rowCount === 0) {
                 if (result.length === 0) {
-                  const sql = `INSERT INTO myart_galeriak (azonosito, nev, muveszNev, muveszTelefon, muveszEmail, muveszUrl, kepek, leiras, isActive)
-                            VALUES ('${felvitelObj.azonosito}', '${felvitelObj.nev}', '${felvitelObj.muveszNev}', '${felvitelObj.muveszTelefon}', '${felvitelObj.muveszEmail}', '${felvitelObj.muveszUrl}', '${JSON.stringify(felvitelObj.kepek)}', '${felvitelObj.leiras}', '${felvitelObj.isActive}');`;
-                            myArt.query(sql, (err) => {
+                  const sql = `INSERT INTO myart_galeriak (azonosito, nev, muveszNev, muveszTelefon, muveszEmail, muveszUrl, leiras, isActive)
+                            VALUES ('${felvitelObj.azonosito}', '${felvitelObj.nev}', '${felvitelObj.muveszNev}', '${felvitelObj.muveszTelefon}', '${felvitelObj.muveszEmail}', '${felvitelObj.muveszUrl}', '${felvitelObj.leiras}', '${felvitelObj.isActive}');`;
+                  const getLastIdSql = `SELECT MAX( id ) as id FROM ingatlanok;`
+                            myArt.query(sql, async (err) => {
                     if (!err) {
-                      res.status(200).send({
-                        msg: 'MyArt galéria bejegyzés sikeresen hozzáadva!'
+                      let id = await useQuery(ingatlanok, getLastIdSql);
+                      id = id[0].id;
+                      let kepek = [];
+                      felvitelObj.kepek.map((kep) => {
+                        kepek.push({
+                          filename: kep.filename,
+                          file: kep.file,
+                          isCover: kep.isCover,
+                          preview: kep.preview,
+                          src: `https://myhomeimmo.hu/images/galeriak/${id}/${kep.filename}`,
+                          title: kep.title
+                        });
                       });
+
+                      felvitelObj.kepek = kepek;
+                      
+
+                      const dir = `/home/eobgycvo/public_html/images/galeriak/${id}/`;
+                      let exist = existsSync(dir);
+                      if (!exist) {
+                        mkdirSync(dir);
+                        felvitelObj.kepek.forEach((item) => {
+                          const img = item.preview;
+                          const data = img.replace(/^data:image\/\w+;base64,/, "");
+                          const buf = Buffer.from(data, 'base64');
+                          writeFileSync(path.join(dir,item.filename), buf);
+                          delete item.preview
+                        })
+                      }
+
+                      const updateImagesSql = `UPDATE myart_galeriak SET kepek='${JSON.stringify(felvitelObj.kepek)}' WHERE id='${id}';`;
+
+                      const images = await useQuery(myArt, updateImagesSql);
+                      if (images) {
+                        res
+                        .status(200)
+                        .send({ msg: 'MyArt galéria bejegyzés sikeresen hozzáadva!' });
+                      } else {
+                        res.status(500).send({ err: 'MyArt galéria képek feltöltése sikertelen!' });
+                      }
                     } else {
-                      res.status(500).send({
-                        err: err
-                      });
+                      res
+                        .status(500)
+                        .send({ err: "MyArt galéria bejegyzés hozzáadása sikertelen!", msg: err });
                     }
                   });
                 } else {
@@ -377,7 +417,7 @@ router.get("/galeriak", async (req, res) => {
   router.put("/galeriak", async (req, res) => {
     const token = req.cookies.JWT_TOKEN;
     if (token) {
-      const user = validateToken(token, jwtparams.secret);
+      const user = await validateToken(token, jwtparams.secret);
       // const user = { roles: [{ value: "SZUPER_ADMIN"}] };
       if (user === null) {
         res.status(401).send({
@@ -391,7 +431,40 @@ router.get("/galeriak", async (req, res) => {
           if (user.roles && user.roles.length !== 0 && hasRole(JSON.parse(user.roles), ["SZUPER_ADMIN"])) {
             if (id) {
               modositoObj = JSON.parse(JSON.stringify(modositoObj));
-              modositoObj.isActive = modositoObj.isActive === true ? '0' : '1';
+              modositoObj.isActive = modositoObj.isActive === true ? 0 : 1;
+
+              let kepek = [];
+              modositoObj.kepek.forEach((kep) => {
+                kepek.push({
+                  filename: kep.filename,
+                  file: kep.file,
+                  isCover: kep.isCover,
+                  preview: kep.preview,
+                  src: `https://myhomeimmo.hu/images/galeriak/${id}/${kep.filename}`,
+                  title: kep.title
+                });
+
+              });
+
+              modositoObj.kepek = kepek;
+              
+
+              const dir = `/home/eobgycvo/public_html/images/galeriak/${id}/`;
+              let exist = existsSync(dir);
+              if (!exist) {
+                mkdirSync(dir);
+                
+              }
+              modositoObj.kepek.forEach((item) => {
+                if (item.preview) {
+                  const img = item.preview;
+                  const data = img.replace(/^data:image\/\w+;base64,/, "");
+                  const buf = Buffer.from(data, 'base64');
+                  writeFileSync(path.join(dir,item.filename), buf);
+                  delete item.preview
+                }
+               
+              })
               const sql = `UPDATE myart_galeriak SET azonosito='${modositoObj.azonosito}', nev='${modositoObj.nev}', muveszNev='${modositoObj.muveszNev}', muveszTelefon='${modositoObj.muveszTelefon}', muveszEmail='${modositoObj.muveszEmail}', muveszUrl='${modositoObj.muveszUrl}', kepek='${JSON.stringify(modositoObj.kepek)}', leiras='${modositoObj.leiras}', isActive='${modositoObj.isActive}' WHERE id = '${id}';`;
               myArt.query(sql, (err) => {
                 if (!err) {
@@ -435,11 +508,11 @@ router.get("/galeriak", async (req, res) => {
     }
   });
   
-  router.delete("/galeriak", (req, res) => {
+  router.delete("/galeriak", async (req, res) => {
     const token = req.cookies.JWT_TOKEN;
     const id = req.headers.id;
     if (token) {
-      const user = validateToken(token, jwtparams.secret);
+      const user = await validateToken(token, jwtparams.secret);
       if (user === null) {
         res.status(401).send({
           err: "Nincs belépve! Kérem jelentkezzen be!"
@@ -450,6 +523,8 @@ router.get("/galeriak", async (req, res) => {
             const sql = `DELETE FROM myart_galeriak WHERE id='${id}';`;
             myArt.query(sql, (err) => {
               if (!err) {
+                const dir = `/home/eobgycvo/public_html/images/galeriak/${id}/`;
+                rmSync(dir, { recursive: true, force: true });
                 res.status(200).send({
                   msg: "MyArt galéria bejegyzés sikeresen törölve!"
                 });

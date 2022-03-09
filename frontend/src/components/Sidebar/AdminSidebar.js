@@ -29,7 +29,7 @@ const AdminSidebar = (props) => {
                 <Collapse navbar className='admin_collapse show' id="admin_collapse">
                 <Nav className="me-auto" navbar id='admin_nav'>
                     <NavItem className='admin-sidebar__navitem'>
-                        <NavLink className="admin-sidebar__navlink nav-link" to='/admin' history={history} id='home' end={true}>
+                        <NavLink className="admin-sidebar__navlink nav-link" to='/admin' history={history} id='home' end={"true"}>
                         &nbsp;&nbsp;<i className="fas fa-home" />
                             &nbsp; Főoldal
                         </NavLink>

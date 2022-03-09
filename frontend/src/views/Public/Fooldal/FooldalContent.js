@@ -9,7 +9,7 @@ const FooldalContent = (props) => {
   const [ ingatlanLista, setIngatlanLista ] = useState([]);
 
   const viewIngatlan = (id) => {
-    navigate('/ingatlan', { state: { id: id } });
+    navigate(`/ingatlan/${id}`, { state: { id: id } });
   }
 
   const scrollToElement = (id) => {
@@ -39,10 +39,13 @@ const FooldalContent = (props) => {
   }
 
   const isNewIngatlan = (rogzitIdo) => {
+    // TODO: Nem működik jól, megjavítani!!!!
     const today = Moment(Moment.now());
     const differDays = 14;
-    const currentDiff = today.diff(rogzitIdo, 'days');
-    if (currentDiff < differDays) {
+    const currentDiff = Moment(rogzitIdo).diff(today, 'days')
+    // const currentDiff = Moment(rogzitIdo).from(today);
+    // console.log(currentDiff, differDays);
+    if (parseInt(currentDiff, 10) < differDays) {
       return true;
     } else {
       return false;
@@ -56,7 +59,7 @@ const FooldalContent = (props) => {
   }
     return (
         ingatlanLista.map((ingat, index) => {
-          if (ingat.isKiemelt) {
+          // if (ingat.isKiemelt) {
             let keplista = ingat.kepek;
           return (
             <Card key={index.toString()} id={`ingatlan_${index.toString()}`}>
@@ -104,7 +107,7 @@ const FooldalContent = (props) => {
             </CardFooter>
           </Card>
           );
-          } 
+          // } 
         })
     );
   }

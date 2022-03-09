@@ -2,6 +2,34 @@ const { jwtparams, useQuery, poolConnect, validateToken, hasRole } = require('..
 const router = require("express").Router();
 const adminusers = poolConnect();
 const bcrypt = require("bcrypt");
+const { existsSync, mkdirSync, writeFileSync, rmSync } = require('fs');
+const multer = require('multer');
+const storage = multer.diskStorage({
+  destination: async function (req, file, cb) {
+    if (file) {
+      let id = req.headers.id;
+    if (!id) {
+      const getLastIdSql = `SELECT auto_increment FROM INFORMATION_SCHEMA.TABLES WHERE table_name = 'adminusers'`
+      id = await useQuery(adminusers, getLastIdSql);
+      id = parseInt(id[0].auto_increment);
+    }
+    const dir = `${process.env.avatardir}/${isNaN(id) ? 1 : id}/`;
+    let exist = existsSync(dir);
+     if (!exist) {
+      mkdirSync(dir);
+     }
+    cb(null, dir)
+    }
+    
+  },
+  filename: function (req, file, cb) {
+    if (file) {
+      cb(null, file.originalname) //Appending .jpg
+    }
+    
+  }
+});
+const upload = multer({ storage: storage });
 
 // ADMINUSERS START
 
@@ -9,7 +37,7 @@ router.get("/", async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   if (token) {
     const id = req.headers.id;
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     // const user = { roles: [{ value: "SZUPER_ADMIN"}]}
     if (user === null) {
       res.status(401).send({
@@ -62,11 +90,11 @@ router.get("/", async (req, res) => {
   }
 });
 
-router.post("/", async (req, res) => {
+router.post("/", upload.array('avatar'), async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   // TODO berakni a token vizsgálatot a true helyére és a user a validateToken-es lesz ha lesz Admin felület hozzá!!!
   if (token) {
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     // const user = { roles: [{ value: "SZUPER_ADMIN"}] };
     if (user === null) {
       res.status(401).send({
@@ -103,12 +131,25 @@ router.post("/", async (req, res) => {
               const resultEmail = await useQuery(adminusers, sqlEmail);
               // if (resultEmail.rowCount === 0) {
               if (resultEmail.length === 0) {
-                felvitelObj.isErtekesito = felvitelObj.isErtekesito === true ? 0 : 1;
-
+                felvitelObj.isErtekesito = felvitelObj.isErtekesito === 'true' ? 0 : 1;
+                const getLastIdSql = `SELECT MAX( id ) as id FROM adminusers;`
+                let id = await useQuery(adminusers, getLastIdSql);
+                id = id[0].id;
+                let kepek = [];
+                if (req.files) {
+                  req.files.map((kep) => {
+                    kepek.push({
+                      src: `${process.env.avatarUrl}/${isNaN(id) ? 1 : id}/${kep.filename}`,
+                      title: kep.filename
+                    });
+                  });
+                }
+                felvitelObj.avatar = kepek;
                 const sql = `INSERT INTO adminusers (nev, cim, telefon, avatar, username, email, password, roles, token, isErtekesito)
                           VALUES ('${JSON.stringify(felvitelObj.nev)}', '${JSON.stringify(felvitelObj.cim)}', '${JSON.stringify(felvitelObj.telefon)}', '${JSON.stringify(felvitelObj.avatar)}', '${felvitelObj.username}', '${felvitelObj.email}', '${hash}', '${JSON.stringify(felvitelObj.roles)}', '${null}', '${felvitelObj.isErtekesito}');`;
                 adminusers.query(sql, (err) => {
                   if (!err) {
+                   
                     res.status(200).send({
                       msg: 'Admin sikeresen hozzáadva!'
                     });
@@ -152,10 +193,10 @@ router.post("/", async (req, res) => {
   }
 });
 
-router.put("/", async (req, res) => {
+router.put("/", upload.array('uj_avatar'), async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   if (token) {
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     // const user = { roles: [{ value: "SZUPER_ADMIN"}] };
     if (user === null) {
       res.status(401).send({
@@ -172,10 +213,42 @@ router.put("/", async (req, res) => {
             hasRole(JSON.parse(user.roles), ["SZUPER_ADMIN"]))
         ) {
           if (id) {
-            modositoObj = JSON.parse(JSON.stringify(modositoObj));
-            modositoObj.isErtekesito = modositoObj.isErtekesito === true ? 0 : 1;
-            const hash = await bcrypt.hash(modositoObj.password, 10);
-            const sql = `UPDATE adminusers SET nev = '${JSON.stringify(modositoObj.nev)}', cim = '${JSON.stringify(modositoObj.cim)}', telefon = '${JSON.stringify(modositoObj.telefon)}', avatar = '${JSON.stringify(modositoObj.avatar)}', username = '${modositoObj.username}', email = '${modositoObj.email}', password = '${hash}', roles = '${JSON.stringify(modositoObj.roles)}', isErtekesito = '${modositoObj.isErtekesito}' WHERE id = '${id}';`;
+            // modositoObj = JSON.parse(JSON.stringify(modositoObj));
+            modositoObj.isErtekesito = modositoObj.isErtekesito === 'true' ? 0 : 1;
+            const isPasswordChanged = modositoObj.password ? true : false;
+            let hash = undefined
+            if (isPasswordChanged) {
+              hash = await bcrypt.hash(modositoObj.password, 10);
+            }
+            
+
+            let kepek = [];
+            if (modositoObj.avatar) {
+                
+              modositoObj.avatar = JSON.parse(JSON.stringify(modositoObj.avatar));
+              if (Array.isArray(modositoObj.avatar)) {
+                modositoObj.avatar.forEach((item) => {
+                  kepek.push(JSON.parse(item));
+              })
+              } else {
+                kepek.push(JSON.parse(modositoObj.avatar));
+              }
+              
+            }
+
+            if (req.files) {
+              req.files.map((kep) => {
+                kepek.push({
+                  src: `${process.env.avatarUrl}/${id}/${kep.filename}`,
+                  title: kep.filename
+                });
+              });
+            }
+
+            modositoObj.avatar = kepek;
+          
+
+            const sql = isPasswordChanged ? `UPDATE adminusers SET nev = '${modositoObj.nev}', cim = '${modositoObj.cim}', telefon = '${modositoObj.telefon}', avatar = '${JSON.stringify(modositoObj.avatar)}', username = '${modositoObj.username}', email = '${modositoObj.email}', password = '${hash}', roles = '${modositoObj.roles}', isErtekesito = '${modositoObj.isErtekesito}' WHERE id = '${id}';` : `UPDATE adminusers SET nev = '${modositoObj.nev}', cim = '${modositoObj.cim}', telefon = '${modositoObj.telefon}', avatar = '${JSON.stringify(modositoObj.avatar)}', username = '${modositoObj.username}', email = '${modositoObj.email}', roles = '${modositoObj.roles}', isErtekesito = '${modositoObj.isErtekesito}' WHERE id = '${id}';`;
             adminusers.query(sql, (err) => {
               if (!err) {
                 res
@@ -219,10 +292,10 @@ router.put("/", async (req, res) => {
   }
 });
 
-router.delete("/", (req, res) => {
+router.delete("/", async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   if (token) {
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     if (user === null) {
       res.status(401).send({
         err: "Nincs belépve! Kérem jelentkezzen be!"

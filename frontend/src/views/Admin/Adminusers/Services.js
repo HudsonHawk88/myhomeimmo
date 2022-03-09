@@ -158,11 +158,11 @@ export default class Services {
           method: "POST",
           cache: "no-cache",
           headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
+            // "Content-Type": "application/json",
+            // "Accept": "application/json",
             // "Access-Control-Allow-Origin": "http://192.168.11.64:3000",
           },
-          body: JSON.stringify(adminUser)
+          body: adminUser
         });
 
         return result;
@@ -174,12 +174,12 @@ export default class Services {
         method: "PUT",
         cache: "no-cache",
         headers: {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
+            // "Content-Type": "application/json",
+            // "Accept": "application/json",
             // "Access-Control-Allow-Origin": "http://192.168.11.64:3000",
             id: id
         },
-        body: JSON.stringify(adminUser)
+        body: adminUser
         });
 
         return result;

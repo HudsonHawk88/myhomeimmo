@@ -106,12 +106,12 @@ const PublicHeader = (props) => {
                   </DropdownItem>
                 </DropdownMenu>
             </UncontrolledDropdown>
-            {/* <NavItem className='nav-item public-navbar__nav-item'>
-              <NavLink className="nav-link public-navbar__nav-link" to="myart" id='myart' history={history}>
+            <NavItem className='nav-item public-navbar__nav-item'>
+              <NavLink className="nav-link public-navbar__nav-link" to="/myart" id='myart' history={history}>
               <i className="fas fa-shapes"></i>
                 &nbsp; MyArt
               </NavLink>
-            </NavItem> */}
+            </NavItem>
           </Nav>
         </Collapse>
       </Navbar>

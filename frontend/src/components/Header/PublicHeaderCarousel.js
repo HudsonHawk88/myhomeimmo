@@ -28,7 +28,7 @@ const PublicHeaderCarousel = (props) => {
                     infinite={true}
                     autoPlay={true}
                     slideInterval={15000}
-                    showBullets={true}
+                    showBullets={false}
                 />
             </div>
         </div>

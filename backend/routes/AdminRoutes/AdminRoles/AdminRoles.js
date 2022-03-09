@@ -4,11 +4,11 @@ const roles = poolConnect();
 
 // ROLES START
 
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   if (token) {
     const id = req.headers.id;
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     // const user = { roles: [{ value: "SZUPER_ADMIN"}]}
     if (user === null) {
       res.status(401).send({
@@ -51,7 +51,7 @@ router.post("/", async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   // TODO berakni a token vizsgálatot a true helyére és a user a validateToken-es lesz ha lesz Admin felület hozzá!!!
   if (token) {
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     // const user = { roles: [{ value: "SZUPER_ADMIN"}] };
     if (user === null) {
       res.status(401).send({
@@ -130,7 +130,7 @@ router.post("/", async (req, res) => {
 router.put("/", async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   if (token) {
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     // const user = { roles: [{ value: "SZUPER_ADMIN"}] };
     if (user === null) {
       res.status(401).send({
@@ -187,10 +187,10 @@ router.put("/", async (req, res) => {
   }
 });
 
-router.delete("/", (req, res) => {
+router.delete("/", async (req, res) => {
   const token = req.cookies.JWT_TOKEN;
   if (token) {
-    const user = validateToken(token, jwtparams.secret);
+    const user = await validateToken(token, jwtparams.secret);
     if (user === null) {
       res.status(401).send({
         err: "Nincs belépve! Kérem jelentkezzen be!"

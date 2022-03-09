@@ -10,12 +10,25 @@ import { handleInputChange } from '../../../commons/InputHandlers';
 import Services from './Services';
 
 const Ingatlanok = (props) => {
+    const penznemek = [
+        {
+            penznemid: '0',
+            penznem: 'HUF',
+            penznemText: 'Ft'
+        },
+        {
+            penznemid: '1',
+            penznem: 'EUR',
+            penznemText: 'Euro'
+        }
+    ];
     const defaultObj = {
         cim: '',
         leiras: '',
         kepek: [],
         ar: '',
         kaucio: '',
+        penznem: '',
         statusz: '',
         tipus: '',
         allapot: '',
@@ -62,7 +75,22 @@ const Ingatlanok = (props) => {
     const [ orszagok, setOrszagok ] = useState([]);
     const [ telepulesek, setTelepulesek ] = useState([]);
     const [ telepulesekOpts, setTelepulesekOpts ] = useState([]);
+    const [ figyelmeztetesModal, setFigyelmeztetesModal ] = useState(false);
     const { addNotification, user, ertekesito } = props;
+
+    const toggleFigyelmeztetes = () => {
+        setFigyelmeztetesModal(!figyelmeztetesModal);
+    }
+
+    const generateXml = () => {
+        Services.generateXml().then((res) => {
+            if (!res.err) {
+                addNotification('success', res.msg)
+            } else {
+                addNotification('error', res.err)
+            }
+        })
+    }
 
     const isIrszamTyped = () => {
         if (helyseg.irszam && helyseg.irszam.length === 4) {
@@ -128,6 +156,7 @@ const Ingatlanok = (props) => {
         listIngatlanok();
         listOrszagok();
         listTelepulesek();
+        toggleFigyelmeztetes();
     }
 
     const getErtekesito = () => {
@@ -190,19 +219,31 @@ const Ingatlanok = (props) => {
         if (orszagok.length !== 0) {
           return orszagok.map((orszag) => {
             return (
-              <option key={orszag.id} value={orszag.id}>
+              <option key={orszag.id + 'orszag'} value={orszag.id}>
                 {orszag.orszagnev}
               </option>
             );
           });
         }
       };
+
+    const renderPenznemOptions = () => {
+        if(penznemek && penznemek.length !== 0) {
+            return penznemek.map((penznem) => {
+                return (
+                    <option key={penznem.id + 'penznem'} value={penznem.penznemText}>
+                        {penznem.penznemText}
+                    </option>
+                )
+            })
+        }
+    }
     
     const renderTelepulesekOptions = () => {
     if (telepulesekOpts.length !== 0) {
         return telepulesekOpts.map((telepules) => {
         return (
-            <option key={telepules.id} value={telepules.id}>
+            <option key={telepules.id + 'telepules'} value={telepules.id}>
             {telepules.telepulesnev}
             </option>
         );
@@ -393,9 +434,32 @@ const Ingatlanok = (props) => {
         kuldObj.feladoEmail = felado.feladoEmail;
         kuldObj.feladoTelefon = felado.feladoTelefon;
         kuldObj.feladoAvatar = felado.feladoAvatar;
+        kuldObj.isErtekesito = user.isErtekesito;   
+        let datas = new FormData();
 
+
+        // datas.append('kepek', kuldObj.kepek);
         if(!currentId) {
-            Services.addEIngatlan(kuldObj).then((res) => {
+
+            for ( var key in kuldObj ) {
+                if(key === 'kepek' || key === 'feladoAvatar' || key === 'helyseg') {
+                    if (key === 'kepek') {
+                        kuldObj.kepek.forEach((kep) => {
+                            if (kep.file) {
+                                datas.append('kepek', kep.file)
+                            }
+                            
+                        });
+                        
+                    } else {
+                        datas.append(key, JSON.stringify(kuldObj[key]));
+                    }
+                    
+                } else {
+                    datas.append(key, kuldObj[key]);
+                }
+            }
+            Services.addEIngatlan(datas).then((res) => {
                 if (!res.err) {
                     toggleModal();
                     listIngatlanok();
@@ -405,7 +469,27 @@ const Ingatlanok = (props) => {
                 }
             })
         } else {
-            Services.editIngatlan(kuldObj, currentId).then((res) => {
+            for ( var key in kuldObj ) {
+                if(key === 'kepek' || key === 'feladoAvatar' || key === 'helyseg') {
+                    if (key === 'kepek') {
+                        kuldObj.kepek.forEach((kep) => {
+                            if (kep.file) {
+                                datas.append('uj_kepek', kep.file)
+                            } else {
+                                datas.append('kepek', JSON.stringify(kep))
+                            }
+                            
+                        });
+                        
+                    } else {
+                        datas.append(key, JSON.stringify(kuldObj[key]));
+                    }
+                    
+                } else {
+                    datas.append(key, kuldObj[key]);
+                }
+            }
+            Services.editIngatlan(datas, currentId).then((res) => {
                 if (!res.err) {
                     toggleModal();
                     listIngatlanok();
@@ -442,9 +526,13 @@ const Ingatlanok = (props) => {
     });
 
     const getListStyle = (isDraggingOver) => ({
-        display: 'flex',
+        display: 'grid',
+        gridTemplateColumns: '25% 25% 25% 25%',
+        // flexDirection: 'column',
         overflow: 'auto',
-        flexWrap: 'wrap'
+        // maxHeight: '200px',
+        // flex: '1 1 auto',
+        // flexWrap: 'wrap'
     });
 
     const onDragEnd = (result) => {
@@ -493,6 +581,27 @@ const Ingatlanok = (props) => {
         setCover();
     }, [ingatlanObj.kepek])
 
+    function dataURItoBlob(dataURI, callback) {
+        // convert base64 to raw binary data held in a string
+        // doesn't handle URLEncoded DataURIs - see SO answer #6850276 for code that does this
+        var byteString = atob(dataURI.split(',')[1]);
+    
+        // separate out the mime component
+        var mimeString = dataURI.split(',')[0].split(':')[1].split(';')[0]
+    
+        // write the bytes of the string to an ArrayBuffer
+        var ab = new ArrayBuffer(byteString.length);
+        var ia = new Uint8Array(ab);
+        for (var i = 0; i < byteString.length; i++) {
+            ia[i] = byteString.charCodeAt(i);
+        }
+    
+        // write the ArrayBuffer to a blob, and you're done
+        var bb = new BlobBuilder();
+        bb.append(ab);
+        return bb.getBlob(mimeString);
+    }
+
     const MyDropzone = () => {
 
         const imageStyle = {
@@ -511,25 +620,35 @@ const Ingatlanok = (props) => {
               reader.onload = (event) => {
               // Do whatever you want with the file contents
               base64 = event.target.result;
-                kep = {
-                    preview: base64,
-                    src: base64,
-                    file: file,
-                    filename: file.name,
-                    title: file.name,
-                    isCover: false
-                }
+              const obj = {
+                filename: file.name,
+                title: file.name,
+                isCover: false,
+                preview: URL.createObjectURL(file),
+                src: URL.createObjectURL(file),
+                file: file
+              }
+
+            //   console.log(file);
+            //   console.log(obj);
+
+                // kep = {
+                //     preview: base64,
+                //     src: base64,
+                //     file: file,
+                //     filename: file.name,
+                //     title: file.name,
+                //     isCover: false
+                // }
                 
                 setIngatlanObj({
                     ...ingatlanObj,
-                    kepek: [...ingatlanObj.kepek, kep]
+                    kepek: [...ingatlanObj.kepek, obj]
                 })
         
               }
-           
-             
-        
-              reader.readAsDataURL(file)
+
+              reader.readAsBinaryString(file)
             })
             
           }, [])
@@ -556,11 +675,11 @@ const Ingatlanok = (props) => {
                             >
                             {ingatlanObj.kepek.map((item, index) => (
                                 
-                                <Draggable key={item.title} draggableId={index.toString()} index={index} isDragDisabled={item.isCover}>
+                                <Draggable key={item.src} draggableId={index.toString()} index={index}>
 
                                 {(provided, snapshot) => (
                                     <div
-                                    className='col-md-3'
+                                    // className='col-md-3'
                                     ref={provided.innerRef}
                                     {...provided.draggableProps}
                                     {...provided.dragHandleProps}
@@ -569,7 +688,7 @@ const Ingatlanok = (props) => {
                                         provided.draggableProps.style
                                     )}
                                     >
-                                    <Card key={index.toString()}>
+                                    <Card key={index.toString()} style={{ maxHeight: '300px' }}>
                                         <CardTitle>{item.nev}</CardTitle>
                                         <CardBody>
                                             <img style={imageStyle} src={item.src || item.preview} alt={item.nev} />
@@ -611,7 +730,7 @@ const Ingatlanok = (props) => {
     const renderModal = () => {
         return (
             <Modal isOpen={modalOpen} toggle={toggleModal} backdrop='static' size='lg'>
-                <Form onSubmit={onSubmit} encType='multipart/form-data'>
+                <Form id="geci" onSubmit={onSubmit} encType="multipart/form-data">
                 <ModalHeader>
                     {!currentId ? "Ingatlan hirdetés felvitele" : "Ingatlan hirdetés módosítása"}
                 </ModalHeader>
@@ -682,7 +801,7 @@ const Ingatlanok = (props) => {
                             onChange={(e) => handleInputChange(e, helyseg, setHelyseg)}
                         >
                             {!currentId && 
-                                <option key='' value=''>Kérjük válasszon országot...</option>
+                                <option key='defaultOrszag' value=''>Kérjük válasszon országot...</option>
                             }
                             {renderOrszagokOptions()}
                         </Input>
@@ -713,7 +832,7 @@ const Ingatlanok = (props) => {
                             // }
                         >
                             {!currentId && 
-                                <option key='' value=''>Kérjük válasszon települést...</option>
+                                <option key='defaultTelepules' value=''>Kérjük válasszon települést...</option>
                             }
                             {renderTelepulesekOptions()}
                         </Input>
@@ -733,7 +852,7 @@ const Ingatlanok = (props) => {
                             value={ingatlanObj.statusz}
                             onChange={(e) => handleInputChange(e, ingatlanObj, setIngatlanObj)}
                         >
-                            <option key='' value=''>Kérjük válasszon státuszt...</option>
+                            <option key='defaultStatusz' value=''>Kérjük válasszon státuszt...</option>
                             <option key='elado' value='Eladó'>Eladó</option>
                             <option key='kiadó' value='Kiadó'>Kiadó</option>
                         </Input>
@@ -760,6 +879,19 @@ const Ingatlanok = (props) => {
                             onChange={(e) => handleInputChange(e, ingatlanObj, setIngatlanObj)}
                         />
                     </div>
+                    <div className='col-md-12'>
+                        <Label>Pénznem: *</Label>
+                        <Input
+                            type='select'
+                            name='penznem'
+                            id='penznem'
+                            value={ingatlanObj.penznem}
+                            onChange={(e) => handleInputChange(e, ingatlanObj, setIngatlanObj)}
+                        >
+                            <option key='defaultPenznem' value=''>Kérjük válasszon  pénznemet...</option>
+                            {renderPenznemOptions()}
+                        </Input>
+                    </div>
                     <br />
                     <div className='col-md-12'>
                         <Label>Típus: *</Label>
@@ -770,7 +902,7 @@ const Ingatlanok = (props) => {
                             value={ingatlanObj.tipus}
                             onChange={(e) => handleInputChange(e, ingatlanObj, setIngatlanObj)}
                         >
-                            <option key='' value=''>Kérjük válasszon típust...</option>
+                            <option key='defaultTipus' value=''>Kérjük válasszon típust...</option>
                             <option key='csaladi' value='Családi ház'>Családi ház</option>
                             <option key='ikerhaz' value='Ikerház'>Ikerház</option>
                             <option key='sorhaz' value='Sorház'>Sorház</option>
@@ -799,7 +931,7 @@ const Ingatlanok = (props) => {
                             value={ingatlanObj.allapot}
                             onChange={(e) => handleInputChange(e, ingatlanObj, setIngatlanObj)}
                         >
-                            <option key='' value=''>Kérjük válasszon állapotot...</option>
+                            <option key='defaultAllapot' value=''>Kérjük válasszon állapotot...</option>
                             <option key='atlagos' value='Átlagos'>Átlagos</option>
                             <option key='felujitando' value='Felújítandó'>Felújítandó</option>
                             <option key='felujitott' value='Felújított'>Felújított</option>
@@ -851,7 +983,7 @@ const Ingatlanok = (props) => {
                             value={ingatlanObj.telektipus}
                             onChange={(e) => handleInputChange(e, ingatlanObj, setIngatlanObj)}
                         >
-                            <option key='' value=''>Kérjük válasszon állapotot...</option>
+                            <option key='defaultTelektipus' value=''>Kérjük válasszon telektípust...</option>
                             <option key='kertvarosias' value='Kertvárosias'>Kertvárosias</option>
                             <option key='nagyvarosias' value='Nagyvárosias'>Nagyvárosias</option>
                             <option key='hetvegi_hazas' value='Hétvégi házas'>Hétvégi házas</option>
@@ -880,7 +1012,7 @@ const Ingatlanok = (props) => {
                             value={ingatlanObj.viz}
                             onChange={(e) => handleInputChange(e, ingatlanObj, setIngatlanObj)}
                         >
-                            <option key='' value=''>Kérjük válasszon állapotot...</option>
+                            <option key='defaultViz' value=''>Kérjük válasszon...</option>
                             <option key='van' value='Van'>Van</option>
                             <option key='nincs_adat' value='Nincs adat'>Nincs adat</option>
                             <option key='telkenbelul' value='Telken belül'>Telken belül</option>
@@ -898,7 +1030,7 @@ const Ingatlanok = (props) => {
                             value={ingatlanObj.gaz}
                             onChange={(e) => handleInputChange(e, ingatlanObj, setIngatlanObj)}
                         >
-                            <option key='' value=''>Kérjük válasszon állapotot...</option>
+                            <option key='defaultGaz' value=''>Kérjük válasszon...</option>
                             <option key='van' value='Van'>Van</option>
                             <option key='nincs_adat' value='Nincs adat'>Nincs adat</option>
                             <option key='telkenbelul' value='Telken belül'>Telken belül</option>
@@ -916,7 +1048,7 @@ const Ingatlanok = (props) => {
                             value={ingatlanObj.villany}
                             onChange={(e) => handleInputChange(e, ingatlanObj, setIngatlanObj)}
                         >
-                            <option key='' value=''>Kérjük válasszon állapotot...</option>
+                            <option key='defaultVillany' value=''>Kérjük válasszon...</option>
                             <option key='van' value='Van'>Van</option>
                             <option key='nincs_adat' value='Nincs adat'>Nincs adat</option>
                             <option key='telkenbelul' value='Telken belül'>Telken belül</option>
@@ -934,7 +1066,7 @@ const Ingatlanok = (props) => {
                             value={ingatlanObj.szennyviz}
                             onChange={(e) => handleInputChange(e, ingatlanObj, setIngatlanObj)}
                         >
-                            <option key='' value=''>Kérjük válasszon állapotot...</option>
+                            <option key='defaultSzennyviz' value=''>Kérjük válasszon...</option>
                             <option key='van' value='Van'>Van</option>
                             <option key='nincs_adat' value='Nincs adat'>Nincs adat</option>
                             <option key='telkenbelul' value='Telken belül'>Telken belül</option>
@@ -974,7 +1106,7 @@ const Ingatlanok = (props) => {
                             value={ingatlanObj.epitesmod}
                             onChange={(e) => handleInputChange(e, ingatlanObj, setIngatlanObj)}
                         >
-                            <option key='' value=''>Kérjük válasszon építési módot...</option>
+                            <option key='defaultEpitesmod' value=''>Kérjük válasszon építési módot...</option>
                             <option key='tegla' value='Tégla'>Tégla</option>
                             <option key='konnyu' value='Könnyűszerkezetes'>Könnyűszerkezetes</option>
                             <option key='panel' value='Panel'>Panel</option>
@@ -997,7 +1129,7 @@ const Ingatlanok = (props) => {
                             value={ingatlanObj.futes}
                             onChange={(e) => handleInputChange(e, ingatlanObj, setIngatlanObj)}
                         >
-                            <option key='' value=''>Kérjük válasszon építési fűtési módot...</option>
+                            <option key='defaultFutes' value=''>Kérjük válasszon építési fűtési módot...</option>
                             <option key='cirko' value='Gáz (cirkó)'>Gáz (cirkó)</option>
                             <option key='gaz' value='Gáz'>Gáz</option>
                             <option key='gazkonvektor' value='Gázkonvektor'>Gázkonvektor</option>
@@ -1099,13 +1231,34 @@ const Ingatlanok = (props) => {
         );
     }
 
+    const renderFigyelmeztetesModal = () => {
+        return (
+            <Modal isOpen={figyelmeztetesModal} toggle={toggleFigyelmeztetes}>
+                <ModalHeader>
+                    Figyelmeztetés!
+                </ModalHeader>
+                <ModalBody>
+                    Kérlek az ingatlan árában a mentéskor ne szerepeljen se szókoz, se pont és pénznem! Emellett az alapterület, a telekméret és a beépíthetőség mezőben ne szerepeljen m2! MIndent a weboldal intéz a megjelenéskor!
+                    Köszönöm! :) 
+                </ModalBody>
+                <ModalFooter>
+                    <Button onClick={toggleFigyelmeztetes}>Rendben van, értettem!</Button>
+                </ModalFooter>
+            </Modal>
+        );
+    }
+
     return (
         // <div className='tartalom-admin'>
             <div className='row'>
                 <div className='col-md-12'>
-                    <Button type='button' color='success' onClick={handleNewClick}>Ingatlanhirdetés hozzáadása</Button><br /><br />
+                    <Button type='button' color='success' onClick={handleNewClick}>Ingatlanhirdetés hozzáadása</Button>
+                    &nbsp;&nbsp;
+                    <Button type='button' color='info' onClick={() => generateXml()}>XML file generálásasa</Button>
+                    <br /><br />
                     {renderModal()}
                     {ingatlanokJson && ingatlanokJson.length !== 0 && renderTable()}
+                    {renderFigyelmeztetesModal()}
                 </div>
             </div>
         // </div>
